@@ -1,0 +1,65 @@
+C:\D\5th Sem\ADNI NEW\adni-shortcut\scripts\step01_block_report.py:59: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  tab = tab.loc[:, tab.sum(0) > 0]
+C:\D\5th Sem\ADNI NEW\adni-shortcut\scripts\step01_block_report.py:61: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  tab.loc["Total"] = tab.sum(0)
+C:\D\5th Sem\ADNI NEW\adni-shortcut\scripts\step01_block_report.py:62: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  tab["Total"] = tab.sum(1)
+episodes=13240 subjects=3145 patterns=15
+
+=== BLOCKS ===
+
+[mri] shape=(12310, 257)  feature_cols=256
+  fraction of rows with any NaN = 0.9993
+  mean per-feature NaN fraction = 0.0190
+  top-5 features by NaN fraction:
+     ST8SV                                    0.9899
+     ST68SV                                   0.9128
+     ST125SV                                  0.0428
+     ST107SA                                  0.0373
+     ST38SA                                   0.0373
+  presence: expected present=12310 in_block=12310 dup_episode_rows=0 missing_present=0 absent_present_in_block=0 unknown=0
+
+[fdg] shape=(5063, 7)  feature_cols=6
+  fraction of rows with any NaN = 0.0000
+  mean per-feature NaN fraction = 0.0000
+  top-5 features by NaN fraction:
+     MetaROI_MAX                              0.0000
+     Top50PonsVermis_MAX                      0.0000
+     MetaROI_MEAN                             0.0000
+     Top50PonsVermis_MEAN                     0.0000
+     MetaROI_STDEV                            0.0000
+  presence: expected present=5063 in_block=5063 dup_episode_rows=0 missing_present=0 absent_present_in_block=0 unknown=0
+
+[amy] shape=(4621, 165)  feature_cols=164
+  fraction of rows with any NaN = 0.9998
+  mean per-feature NaN fraction = 0.0122
+  top-5 features by NaN fraction:
+     VENTRICLE_5TH_SUVR                       0.9894
+     NON_WM_HYPOINTENSITIES_SUVR              0.9323
+     RIGHT_VESSEL_SUVR                        0.0400
+     LEFT_VESSEL_SUVR                         0.0268
+     VESSEL_SUVR                              0.0084
+  presence: expected present=4621 in_block=4621 dup_episode_rows=0 missing_present=0 absent_present_in_block=0 unknown=0
+
+[tau] shape=(2827, 163)  feature_cols=162
+  fraction of rows with any NaN = 0.9993
+  mean per-feature NaN fraction = 0.0123
+  top-5 features by NaN fraction:
+     VENTRICLE_5TH_SUVR                       0.9883
+     NON_WM_HYPOINTENSITIES_SUVR              0.9268
+     RIGHT_VESSEL_SUVR                        0.0389
+     LEFT_VESSEL_SUVR                         0.0248
+     VESSEL_SUVR                              0.0103
+  presence: expected present=2827 in_block=2827 dup_episode_rows=0 missing_present=0 absent_present_in_block=0 unknown=0
+
+=== CLASS x PATTERN ===
+pattern    0001  0010  0011  0100  0101  0110  0111  1000  1001  1010  1011  1100  1101  1110  1111  Total
+DIAGNOSIS                                                                                                 
+CN           77   151   121    44     0    59     2  1755   677   303   738   583     3   734    16   5263
+MCI          40   123    47    54     5    50    11  2158   218   250   183  1020   195   996   168   5518
+Dementia     16    30    19    44     2    28     7  1041    88    77    65   520    79   393    50   2459
+Total       133   304   187   142     7   137    20  4954   983   630   986  2123   277  2123   234  13240
+
+cells n<10: 6  empty cells: 1
+
+wrote results\step01\class_pattern_table.csv
