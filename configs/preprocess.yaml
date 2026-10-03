@@ -1,0 +1,10 @@
+# Stage 1 table and block tables (Step 2 of the spec:
+# each block array is [z with NaN -> 0 ; missing-indicator] + the block-level presence mask m_k).
+# Drop-feature threshold and z-score settings follow PIPELINE_v2 §3.2 (fitted on the training split only).
+max_missing: 0.20
+
+# z-score statistics use the training mean/SD (NaN ignored); SD floored at this value
+sd_floor: 1.0e-6
+
+# winsorise z-scores to [-clip, clip]
+clip: 5.0

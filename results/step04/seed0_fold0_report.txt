@@ -1,0 +1,24 @@
+Stage 2 preprocessing — split=s1 seed=0 fold=0
+max_missing=0.2  sd_floor=1e-06  clip=5
+train/val/test episodes = 9566/1027/2647
+
+[mri] kept=254  dropped=2  present_rows=8918
+    dropped features: ['ST68SV', 'ST8SV']
+    clipped z fraction (|z|>5 of finite present z): 0.000460 (1029/2239293)
+    per-row missing-indicator rate: min=0.0000 median=0.0000 max=0.4764
+
+[fdg] kept=6  dropped=0  present_rows=3632
+    dropped features: (none)
+    clipped z fraction (|z|>5 of finite present z): 0.000321 (7/21792)
+    per-row missing-indicator rate: min=0.0000 median=0.0000 max=0.0000
+
+[amy] kept=162  dropped=2  present_rows=3350
+    dropped features: ['VENTRICLE_5TH_SUVR', 'NON_WM_HYPOINTENSITIES_SUVR']
+    clipped z fraction (|z|>5 of finite present z): 0.000116 (63/542463)
+    per-row missing-indicator rate: min=0.0000 median=0.0000 max=0.0247
+
+[tau] kept=160  dropped=2  present_rows=2090
+    dropped features: ['VENTRICLE_5TH_SUVR', 'NON_WM_HYPOINTENSITIES_SUVR']
+    clipped z fraction (|z|>5 of finite present z): 0.004213 (1408/334243)
+    per-row missing-indicator rate: min=0.0000 median=0.0000 max=0.0188
+
