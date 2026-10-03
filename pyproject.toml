@@ -1,0 +1,20 @@
+[project]
+name = "adni-shortcut"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "scikit-learn",
+    "lightgbm",
+    "statsmodels",
+    "matplotlib",
+    "pyyaml",
+    "joblib",
+    "pyarrow",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

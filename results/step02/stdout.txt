@@ -1,0 +1,36 @@
+C:\D\5th Sem\ADNI NEW\adni-shortcut\scripts\adni_stage3_profile.py:25: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  Pc, Pm = P.sum(1), P.sum(0)
+C:\D\5th Sem\ADNI NEW\adni-shortcut\scripts\adni_stage3_profile.py:25: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  Pc, Pm = P.sum(1), P.sum(0)
+N=13240 subjects=3145 classes={'MCI': 5518, 'CN': 5263, 'Dementia': 2459}
+P(c): {'CN': 0.397, 'MCI': 0.417, 'Dementia': 0.186}
+patterns with n<10 in some class: 6 of 45 cells; empty cells: 1
+Cramer's V(class,pattern)=0.238  95% subject-bootstrap CI [0.225, 0.258]
+Mutual information in nats  (observed | permutation-null mean | excess):
+   S=ORIGPROT:  I(C;M)=0.0604   I(C;S)=0.0469   I(C;M|S)=0.0593 (null 0.0045, excess 0.0548)
+      share of I(C;M) that survives conditioning on S: 91%
+   S=COLPROT:  I(C;M)=0.0604   I(C;S)=0.0343   I(C;M|S)=0.0518 (null 0.0033, excess 0.0485)
+      share of I(C;M) that survives conditioning on S: 80%
+Classifier that sees NO imaging values (macro-OvR AUROC, balanced acc; chance = 0.5, 0.333):
+   pattern only                     0.618  0.412
+   protocol only (ORIGPROT)         0.604  0.377
+   protocol only (visit COLPROT)    0.601  0.393
+   pattern + ORIGPROT               0.663  0.417
+   pattern + COLPROT                0.649  0.414
+independence weight exp(-I): raw range [0.53, 31.62] ESS/N=0.739 | clipped [0.2,5.0] ESS/N=0.878
+Cramer's V after clipped reweighting = 0.055  (before 0.238)
+Spearman(cell count, sigmoid(-I))=-0.26   Spearman(cell count, exp(-I))=-0.26
+DIAGNOSIS pattern   n       PMI   w_indep
+       CN    1101   3 -3.453840 31.621581
+       CN    0101   0 -1.910398  6.755778
+       CN    1111  16 -1.735535  5.671963
+       CN    0111   2 -1.228947  3.417629
+ Dementia    1011  65 -1.030986  2.803829
+      MCI    1011 183 -0.807395  2.242060
+DIAGNOSIS pattern   n      PMI  w_indep
+ Dementia    0100  44 0.511295 0.599719
+      MCI    1101 195 0.521709 0.593505
+      MCI    1111 168 0.540792 0.582287
+       CN    1001 677 0.549091 0.577475
+ Dementia    0111   7 0.628990 0.533130
+       CN    1011 738 0.632260 0.531390
