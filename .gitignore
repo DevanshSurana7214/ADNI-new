@@ -1,0 +1,15 @@
+# Environment
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Data (raw is read-only and must not be committed; ADNI privacy)
+data/raw/
+
+# Step artifacts (keep REPORT.md, ignore bulky model/feature artifacts)
+results/*/artifacts/
+results/**/blocks/
+*.pt
+*.pth
+*.joblib

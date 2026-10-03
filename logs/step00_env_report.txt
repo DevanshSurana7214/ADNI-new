@@ -1,0 +1,22 @@
+========================================================================
+ENVIRONMENT REPORT
+========================================================================
+OS: Windows 11 (10.0.26300)
+machine: AMD64
+Python version: 3.12.10 (CPython)
+Python executable: C:\D\5th Sem\ADNI NEW\adni-shortcut\.venv\Scripts\python.exe
+CPU count (logical): 12
+RAM: 15.3 GiB
+torch version: 2.11.0+cu128
+torch.cuda.is_available(): True
+CUDA device count: 1
+  GPU 0: NVIDIA GeForce RTX 3050 6GB Laptop GPU  VRAM=6.0 GiB  (capability 8.6)
+------------------------------------------------------------------------
+SHA256 of files in data\raw:
+  DATADIC_03Oct2026.csv                         acf1b0c435731a7b39c33803b47334dba0b35a9d00bc460c32cdffef1b5c6a5d  readonly=True
+  DXSUM.csv                                     967b0fa351c0ad26a5dbebd8e921d850f10c0225d47380a9ab753f3bcb933fd2  readonly=True
+  UCBERKELEY_AMY_6MM_03Oct2026.csv              177e839ba3cdf41587af6e19fca001ee6eca93a554ec0ea29b9766119cf95499  readonly=True
+  UCBERKELEY_TAU_6MM_03Oct2026.csv              5d5061df051e044796f9974e33274c57edf69d14aad40d8ca2a234ca01bda3c0  readonly=True
+  UCBERKELEYFDG_8mm_02_17_23_03Oct2026.csv      1d1897f3f0a93163f9e1090ba7f0fba7c365b20d53d08b1be1c8c6e2d31992fa  readonly=True
+  UCSFFSX7_03Oct2026.csv                        e00524a1799175188efcd0131a24f90d59bf819978666116f8819b6f717b8e16  readonly=True
+========================================================================
