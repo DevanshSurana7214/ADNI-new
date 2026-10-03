@@ -1,0 +1,15 @@
+=== STEP 1b DIFF: canonical docs/episodes.csv vs docs/episodes_v1_reference.csv ===
+v1 shape (13240, 22) cols 22 | new shape (13240, 26) cols 26
+new columns added: ['mri_dropped_lowfeat', 'fdg_dropped_lowfeat', 'amy_dropped_lowfeat', 'tau_dropped_lowfeat']
+(3a) modelling columns identical: True
+(3a) VISCODE2 diffs: 4
+    RID 802 2014-04-04: v1=m72 -> new=m84
+    RID 4536 2020-03-03: v1=m78 -> new=m90
+    RID 6503 2022-09-14: v1=m36 -> new=m48
+    RID 10738 2025-06-04: v1=sc -> new=bl
+
+=== GATING CHECK (3c) ===
+mri: m=1 n=12310 | m=0 n=930 | m0_date_notna=0 m0_gap_notna=0 | m1_max|gap|=180 | dropped_lowfeat=7
+fdg: m=1 n=5063 | m=0 n=8177 | m0_date_notna=0 m0_gap_notna=0 | m1_max|gap|=180 | dropped_lowfeat=4
+amy: m=1 n=4621 | m=0 n=8619 | m0_date_notna=0 m0_gap_notna=0 | m1_max|gap|=180 | dropped_lowfeat=429
+tau: m=1 n=2827 | m=0 n=10413 | m0_date_notna=0 m0_gap_notna=0 | m1_max|gap|=180 | dropped_lowfeat=86

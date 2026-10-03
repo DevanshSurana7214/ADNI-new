@@ -34,23 +34,20 @@ def test_n_mod_and_pattern_consistency(ep: pd.DataFrame) -> None:
 
 
 def test_present_modality_has_date_and_gap_within_window(ep: pd.DataFrame) -> None:
-    """For m_k == 1 the scan date must exist and |gap| <= window.
+    """For m_k == 1 the scan date must exist and |gap| <= window; for m_k == 0 both must be NaN.
 
-    For m_k == 0 the gap is allowed to be present-but-unused: a scan can be found in the window and
-    then dropped by the >50%-missing-feature rule, which zeroes m_k *after* the merge and leaves the
-    date/gap in place. So we only assert that an absent modality is never *used* (m_k == 0), not
-    that its date is null.
+    The >50%-missing-feature rule zeroes m_k *after* the merge, so the script explicitly nulls the
+    date/gap of any absent modality. Every downstream analysis must gate scan-date/gap use on
+    m_k == 1.
     """
     for k in MODS:
         present = ep[ep[f"m_{k}"] == 1]
         assert present[f"{k}_date"].notna().all(), f"{k}: present modality must have a scan date"
         assert present[f"{k}_gap_days"].notna().all(), f"{k}: present modality must have a gap"
         assert (present[f"{k}_gap_days"].abs() <= WINDOW).all(), f"{k}: |gap| must be <= {WINDOW} days"
-        # An absent modality must never be encoded: its gap, if present, is at most the window
-        # (it came from a scan that was then dropped), and it is ignored downstream.
         absent = ep[ep[f"m_{k}"] == 0]
-        if absent[f"{k}_gap_days"].notna().any():
-            assert (absent[f"{k}_gap_days"].dropna().abs() <= WINDOW).all()
+        assert absent[f"{k}_date"].isna().all(), f"{k}: absent modality must have no scan date"
+        assert absent[f"{k}_gap_days"].isna().all(), f"{k}: absent modality must have no gap"
 
 
 def test_labels_in_range_and_consistent(ep: pd.DataFrame) -> None:

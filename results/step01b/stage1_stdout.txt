@@ -1,0 +1,7 @@
+missing-feature rule: 69 episodes dropped (blocks with >50% missing features treated as absent)
+episodes=13240 subjects=3145 patterns=15 window=+/-180d
+{'MCI': 5518, 'CN': 5263, 'Dementia': 2459}
+  mri: n=12310 features=256 median|gap|=12d
+  fdg: n=5063 features=6 median|gap|=16d
+  amy: n=4621 features=164 median|gap|=23d
+  tau: n=2827 features=162 median|gap|=26d

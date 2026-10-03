@@ -34,10 +34,16 @@ def load(up, window, amy_tracers, tau_tracers):
 
     dx = pd.read_csv(P("dx"), low_memory=False,
                      usecols=["RID", "ORIGPROT", "COLPROT", "VISCODE2", "EXAMDATE", "DIAGNOSIS", "update_stamp"])
+    # DETERMINISM: record the original CSV row order so the tie-break below is stable across
+    # machines and pandas versions (some (RID, EXAMDATE) groups share an identical update_stamp).
+    dx["_line"] = np.arange(len(dx))
     dx = dx.dropna(subset=["DIAGNOSIS", "EXAMDATE"])
     # drop (RID, date) groups whose duplicate rows disagree on the label
     nun = dx.groupby(["RID", "EXAMDATE"]).DIAGNOSIS.transform("nunique")
-    dx = dx[nun == 1].sort_values("update_stamp").drop_duplicates(["RID", "EXAMDATE"], keep="last")
+    # DETERMINISM: keep the latest record; ties on update_stamp break on original file order
+    # (stable mergesort + explicit final key "_line"), so the result is reproducible.
+    dx = dx[nun == 1].sort_values(["update_stamp", "_line"], kind="mergesort").drop_duplicates(
+        ["RID", "EXAMDATE"], keep="last").drop(columns="_line")
     dx["dx_date"] = pd.to_datetime(dx.EXAMDATE)
     dx = dx.sort_values("dx_date").reset_index(drop=True)
     dx["y"] = dx.DIAGNOSIS.map({c: i for i, c in enumerate(CLASSES)})
@@ -47,7 +53,8 @@ def load(up, window, amy_tracers, tau_tracers):
     mri["scan_date"] = pd.to_datetime(mri.EXAMDATE)
     # deterministic choice among several MRI rows on the same date: QC 'Pass' first, then lowest IMAGEUID
     mri["_qc_rank"] = mri.OVERALLQC.map({"Pass": 0}).fillna(1)
-    mri = mri.sort_values(["RID", "scan_date", "_qc_rank", "IMAGEUID"]).drop_duplicates(["RID", "scan_date"])
+    # DETERMINISM: stable sort + explicit final key IMAGEUID selects one scan per (RID, date).
+    mri = mri.sort_values(["RID", "scan_date", "_qc_rank", "IMAGEUID"], kind="mergesort").drop_duplicates(["RID", "scan_date"])
 
     fdg = pd.read_csv(P("fdg"))
     fdg["scan_date"] = pd.to_datetime(fdg.EXAMDATE)
@@ -55,12 +62,16 @@ def load(up, window, amy_tracers, tau_tracers):
     amy = pd.read_csv(P("amy"), low_memory=False)
     amy = amy[amy.TRACER.isin(amy_tracers)].copy()
     amy["scan_date"] = pd.to_datetime(amy.SCANDATE)
-    amy = amy.sort_values(["RID", "scan_date", "qc_flag"], ascending=[True, True, False]).drop_duplicates(["RID", "scan_date"])
+    # DETERMINISM: stable sort; ties on qc_flag break on the explicit final key LONIUID.
+    amy = amy.sort_values(["RID", "scan_date", "qc_flag", "LONIUID"], ascending=[True, True, False, True],
+                          kind="mergesort").drop_duplicates(["RID", "scan_date"])
 
     tau = pd.read_csv(P("tau"), low_memory=False)
     tau = tau[tau.TRACER.isin(tau_tracers)].copy()
     tau["scan_date"] = pd.to_datetime(tau.SCANDATE)
-    tau = tau.sort_values(["RID", "scan_date", "qc_flag"], ascending=[True, True, False]).drop_duplicates(["RID", "scan_date"])
+    # DETERMINISM: stable sort; ties on qc_flag break on the explicit final key LONIUID.
+    tau = tau.sort_values(["RID", "scan_date", "qc_flag", "LONIUID"], ascending=[True, True, False, True],
+                          kind="mergesort").drop_duplicates(["RID", "scan_date"])
 
     return dx, dict(mri=mri, fdg=fdg, amy=amy, tau=tau)
 
@@ -141,8 +152,18 @@ def main():
         feat = [c for c in bl[k].columns if c != "episode_id"]
         if k == "mri": feat = [c for c in feat if c != "mri_field_strength"]
         bad = bl[k].episode_id[bl[k][feat].notna().mean(axis=1) < 0.5]
+        # `{k}_dropped_lowfeat`: a scan WAS found within the window but the >50%-missing rule
+        # treated the modality as absent. It is 0 both for episodes with a usable scan and for
+        # episodes that had no scan in the window at all (those already have m_k == 0).
+        ep[f"{k}_dropped_lowfeat"] = ep.episode_id.isin(bad).astype(int)
         ep.loc[ep.episode_id.isin(bad), f"m_{k}"] = 0
         bl[k] = bl[k][~bl[k].episode_id.isin(bad)]
+    # An absent modality must carry no scan metadata: null out the date/gap wherever m_k == 0.
+    # Downstream analyses must gate every scan-date/gap use on m_k == 1 (the date is only
+    # meaningful when the modality is actually present).
+    for k in MODS:
+        absent = ep[f"m_{k}"] == 0
+        ep.loc[absent, [f"{k}_date", f"{k}_gap_days"]] = np.nan
     ep["pattern"] = ep[[f"m_{k}" for k in MODS]].astype(str).agg("".join, axis=1)
     ep["n_mod"] = ep[[f"m_{k}" for k in MODS]].sum(axis=1)
     ep = ep[ep.n_mod >= 1].reset_index(drop=True)
