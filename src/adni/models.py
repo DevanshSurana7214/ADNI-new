@@ -1,178 +1,147 @@
-"""Neural model for multimodal AD diagnosis (PIPELINE_v2 §5).
+"""Masked-attention multimodal fusion model (PIPELINE_v2 §3.3, §5).
 
-Encoder f_k: LayerNorm -> Linear(2d_k, 256) -> GELU -> Dropout(0.2) -> Linear(256, 128) -> LayerNorm
-Tokens: t_k = h_k + type_embedding_k; learnable [CLS]
-Absent modalities: OMITTED from attention via key padding mask
-Transformer: 2 pre-LN layers, d=128, 4 heads, FFN 256, dropout 0.1
-Head: Linear(128, 3) on [CLS]
+Per modality ``k`` a small tabular encoder produces a 128-d token ``h_k``. Tokens are
+``t_k = h_k + type_k`` with a learnable ``[CLS]`` prepended, and **absent modalities are omitted**
+from attention through a key-padding mask (they are never fed as zeros or a substitute token). Two
+pre-LN Transformer layers (d=128, 4 heads, FFN 256, dropout 0.1) produce ``h = [CLS]``, and a linear
+head maps it to 3 logits.
+
+Modality dropout (training only) drops each **observed** modality independently with probability
+``p``, resampling whenever a row would become empty; the effective mask is returned.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+
+MODALITIES: tuple[str, ...] = ("mri", "fdg", "amy", "tau")
 
 
-class ModalityEncoder(nn.Module):
-    """Encode one modality's features to a 128-d token."""
-    
-    def __init__(self, input_dim: int):
+@dataclass
+class ModelConfig:
+    """Architecture hyperparameters for A0 (§3.3 / §5)."""
+
+    feat_dims: dict[str, int] = field(default_factory=dict)  # kept feature count d_k per modality
+    d_model: int = 128
+    enc_hidden: int = 256
+    enc_dropout: float = 0.2
+    n_heads: int = 4
+    n_layers: int = 2
+    ff_dim: int = 256
+    attn_dropout: float = 0.1
+    n_classes: int = 3
+    modality_dropout: float = 0.25
+
+    def d_in(self, k: str) -> int:
+        """Encoder input width for block ``k`` = 2·d_k (z-scored values + missing indicators)."""
+        return 2 * int(self.feat_dims[k])
+
+
+class Encoder(nn.Module):
+    """``LN -> Linear(2·d_k, 256) -> GELU -> Dropout(0.2) -> Linear(256, 128) -> LN``."""
+
+    def __init__(self, d_in: int, d_hidden: int, d_out: int, dropout: float) -> None:
         super().__init__()
-        self.net = nn.Sequential(
-            nn.LayerNorm(input_dim),
-            nn.Linear(input_dim, 256),
-            nn.GELU(),
-            nn.Dropout(0.2),
-            nn.Linear(256, 128),
-            nn.LayerNorm(128),
-        )
-    
+        self.ln_in = nn.LayerNorm(d_in)
+        self.fc1 = nn.Linear(d_in, d_hidden)
+        self.fc2 = nn.Linear(d_hidden, d_out)
+        self.drop = nn.Dropout(dropout)
+        self.ln_out = nn.LayerNorm(d_out)
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.net(x)
+        x = self.ln_in(x)
+        x = torch.nn.functional.gelu(self.fc1(x))
+        x = self.drop(x)
+        x = self.fc2(x)
+        return self.ln_out(x)
 
 
-class MultimodalTransformer(nn.Module):
-    """Multimodal transformer for AD diagnosis.
-    
-    Args:
-        modalities: dict mapping modality name to input dimension
-        dropout_p: modality dropout probability (training only)
-    """
-    
-    MODALITY_ORDER = ["mri", "fdg", "amy", "tau"]
-    
-    def __init__(self, modalities: dict[str, int], dropout_p: float = 0.25):
+class FusionModel(nn.Module):
+    """Shared-encoder masked-attention fusion over the four modality blocks."""
+
+    def __init__(self, cfg: ModelConfig) -> None:
         super().__init__()
-        self.dropout_p = dropout_p
-        self.modalities = modalities
-        
-        # Per-modality encoders
-        self.encoders = nn.ModuleDict({
-            name: ModalityEncoder(dim) for name, dim in modalities.items()
-        })
-        
-        # Type embeddings for each modality + CLS
-        self.type_emb = nn.Embedding(len(modalities) + 1, 128)
-        
-        # Transformer
-        encoder_layer = nn.TransformerEncoderLayer(
-            d_model=128,
-            nhead=4,
-            dim_feedforward=256,
-            dropout=0.1,
-            batch_first=True,
-            norm_first=True,  # pre-LN
-        )
-        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=2)
-        
-        # Classification head
-        self.head = nn.Linear(128, 3)
-    
+        self.cfg = cfg
+        self.encoders = nn.ModuleDict({k: Encoder(cfg.d_in(k), cfg.enc_hidden, cfg.d_model,
+                                                  cfg.enc_dropout) for k in MODALITIES})
+        self.type_embeddings = nn.Parameter(torch.zeros(len(MODALITIES), cfg.d_model))
+        nn.init.normal_(self.type_embeddings, std=0.02)
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, cfg.d_model))
+        nn.init.normal_(self.cls_token, std=0.02)
+
+        layer = nn.TransformerEncoderLayer(
+            d_model=cfg.d_model, nhead=cfg.n_heads, dim_feedforward=cfg.ff_dim,
+            dropout=cfg.attn_dropout, activation="gelu", batch_first=True, norm_first=True)
+        self.transformer = nn.TransformerEncoder(layer, num_layers=cfg.n_layers,
+                                                  enable_nested_tensor=False)
+        self.head = nn.Linear(cfg.d_model, cfg.n_classes)
+
+    # ------------------------------------------------------------------ forward
     def forward(
         self,
-        features: dict[str, torch.Tensor],
-        mask: dict[str, torch.Tensor] | None = None,
-        training: bool = False,
+        feats: dict[str, torch.Tensor],
+        mask: torch.Tensor,
+        apply_modality_dropout: bool = False,
+        generator: torch.Generator | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Forward pass.
-        
-        Args:
-            features: dict of modality -> [B, d_k] tensor
-            mask: dict of modality -> [B] boolean tensor (True=present), or None
-            training: whether in training mode (for modality dropout)
-        
-        Returns:
-            logits: [B, 3]
-            cls_token: [B, 128] (the [CLS] output)
-            effective_mask: [B, 4] boolean (which modalities were actually used)
+        """Return ``(logits, h, effective_mask)``.
+
+        ``feats[k]`` is ``[B, 2·d_k]``, ``mask`` is a bool tensor ``[B, len(MODALITIES)]``. Absent
+        modalities contribute a key-padding-masked token, so their encoder output never reaches the
+        attention output.
         """
-        B = list(features.values())[0].shape[0]
-        device = list(features.values())[0].device
-        
-        # Modality dropout (training only)
-        if training and self.dropout_p > 0:
-            effective_mask = self._apply_modality_dropout(features, device)
-        else:
-            effective_mask = torch.stack([
-                mask[m].to(device) if mask is not None else 
-                torch.ones(B, dtype=torch.bool, device=device)
-                for m in self.MODALITY_ORDER
-            ], dim=1)
-        
-        # Build tokens for present modalities
-        tokens_list = []
-        token_mask = []  # True = valid token
-        
-        # CLS token
-        cls_token = self.type_emb.weight[-1].unsqueeze(0).expand(B, -1)
-        tokens_list.append(cls_token)
-        token_mask.append(torch.ones(B, dtype=torch.bool, device=device))
-        
-        for i, mod_name in enumerate(self.MODALITY_ORDER):
-            if mod_name not in features:
-                continue
-            feat = features[mod_name]
-            present = effective_mask[:, i]
-            
-            if present.any():
-                # Encode features
-                h = self.encoders[mod_name](feat)
-                # Add type embedding
-                t = self.type_emb.weight[i]
-                token = h + t
-                
-                tokens_list.append(token)
-                token_mask.append(present)
-        
-        # Concatenate all tokens
-        tokens = torch.cat(tokens_list, dim=0)  # [total_valid, 128]
-        token_mask = torch.cat(token_mask, dim=0)  # [total_valid]
-        
-        # Key padding mask: True = pad (masked), False = valid
-        key_padding_mask = ~token_mask
-        
-        # Transformer
-        encoded = self.transformer(tokens, src_key_padding_mask=key_padding_mask)
-        
-        # CLS is always first
-        cls_output = encoded[:B]  # [B, 128]
-        
-        logits = self.head(cls_output)
-        
-        return logits, cls_output, effective_mask
-    
-    def _apply_modality_dropout(
+        if mask.dim() == 1:
+            mask = mask.unsqueeze(0)
+        mask = mask.to(dtype=torch.bool)
+        eff = mask
+        if apply_modality_dropout:
+            eff = self.modality_dropout(mask, generator=generator)
+
+        b = mask.shape[0]
+        tokens = [self.cls_token.expand(b, -1, -1)]
+        for i, k in enumerate(MODALITIES):
+            h = self.encoders[k](feats[k])                       # [B, d]
+            tokens.append((h + self.type_embeddings[i]).unsqueeze(1))
+        tokens = torch.cat(tokens, dim=1)                        # [B, 1 + n_mod, d]
+
+        # key-padding mask: True = ignore. [CLS] is never masked.
+        key_pad = torch.cat([torch.zeros(b, 1, dtype=torch.bool, device=mask.device),
+                             ~eff.to(mask.device)], dim=1)
+        out = self.transformer(tokens, src_key_padding_mask=key_pad)
+        h = out[:, 0]                                            # [CLS]
+        logits = self.head(h)
+        return logits, h, eff
+
+    # ------------------------------------------------------------------ modality dropout
+    def modality_dropout(
         self,
-        features: dict[str, torch.Tensor],
-        device: torch.device,
+        mask: torch.Tensor,
+        generator: torch.Generator | None = None,
     ) -> torch.Tensor:
-        """Apply modality dropout, ensuring at least one modality remains."""
-        B = list(features.values())[0].shape[0]
-        n_mod = len(self.MODALITY_ORDER)
-        
-        # Random dropout mask
-        drop_mask = torch.rand(B, n_mod, device=device) < self.dropout_p
-        
-        # Ensure at least one modality per sample (loop until no empty)
-        any_present = drop_mask.any(dim=1)
-        while not any_present.all():
-            empty_mask = ~any_present
-            n_empty = empty_mask.sum().item()
-            # Resample dropout for empty samples
-            retry_mask = torch.rand(n_empty, n_mod, device=device) < self.dropout_p
-            # If any retry still has all dropped, force first modality to stay
-            still_empty = retry_mask.all(dim=1)
-            if still_empty.any():
-                retry_mask[still_empty, 0] = True
-            drop_mask[empty_mask] = retry_mask
-            any_present = drop_mask.any(dim=1)
-        
-        # Effective mask: True = present (not dropped)
-        effective_mask = ~drop_mask
-        
-        return effective_mask
+        """Drop each observed modality independently with p, resampling rows that would be empty.
 
+        Returns a bool tensor with at least one ``True`` per row (rows that were empty stay empty —
+        the natural mask never has an all-zero row in this cohort).
+        """
+        p = self.cfg.modality_dropout
+        mask = mask.to(dtype=torch.bool)
+        keep_prob = torch.rand(mask.shape, generator=generator, device=mask.device) >= p
+        eff = mask & keep_prob
+        # only rows that had at least one observed modality are resampled
+        empty = (~eff.any(dim=1)) & mask.any(dim=1)
+        for _ in range(1000):
+            if not bool(empty.any()):
+                break
+            idx = empty.nonzero(as_tuple=False).squeeze(1)
+            cand = mask[idx]
+            k2 = torch.rand(cand.shape, generator=generator, device=mask.device) >= p
+            eff[idx] = cand & k2
+            empty = (~eff.any(dim=1)) & mask.any(dim=1)
+        return eff
 
-def count_parameters(model: nn.Module) -> int:
-    """Count trainable parameters."""
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+    # ------------------------------------------------------------------ reporting
+    def num_parameters(self) -> int:
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
