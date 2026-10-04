@@ -1,0 +1,109 @@
+{
+  "selected_config_id": "c6",
+  "best_mean_val_macro_f1": 0.6610659324425923,
+  "tied_within_0.005": [
+    "c0",
+    "c1",
+    "c2",
+    "c3",
+    "c4",
+    "c5",
+    "c6",
+    "c7"
+  ],
+  "mean_val_macro_f1_per_config": {
+    "c0": 0.6597058943044056,
+    "c1": 0.6569139324804822,
+    "c2": 0.6581065381209561,
+    "c3": 0.6569609040345832,
+    "c4": 0.6610659324425923,
+    "c5": 0.6583171338574234,
+    "c6": 0.6603035504682648,
+    "c7": 0.658285675577449
+  },
+  "grid": {
+    "lr": [
+      0.0003,
+      0.0001
+    ],
+    "weight_decay": [
+      0.05,
+      0.3
+    ],
+    "dropout": [
+      [
+        0.2,
+        0.1
+      ],
+      [
+        0.4,
+        0.2
+      ]
+    ],
+    "folds": [
+      0,
+      1
+    ],
+    "seed": 0,
+    "max_epochs": 60,
+    "patience": 10
+  },
+  "configurations": [
+    {
+      "config_id": "c0",
+      "lr": 0.0003,
+      "weight_decay": 0.05,
+      "enc_dropout": 0.2,
+      "attn_dropout": 0.1
+    },
+    {
+      "config_id": "c1",
+      "lr": 0.0003,
+      "weight_decay": 0.05,
+      "enc_dropout": 0.4,
+      "attn_dropout": 0.2
+    },
+    {
+      "config_id": "c2",
+      "lr": 0.0003,
+      "weight_decay": 0.3,
+      "enc_dropout": 0.2,
+      "attn_dropout": 0.1
+    },
+    {
+      "config_id": "c3",
+      "lr": 0.0003,
+      "weight_decay": 0.3,
+      "enc_dropout": 0.4,
+      "attn_dropout": 0.2
+    },
+    {
+      "config_id": "c4",
+      "lr": 0.0001,
+      "weight_decay": 0.05,
+      "enc_dropout": 0.2,
+      "attn_dropout": 0.1
+    },
+    {
+      "config_id": "c5",
+      "lr": 0.0001,
+      "weight_decay": 0.05,
+      "enc_dropout": 0.4,
+      "attn_dropout": 0.2
+    },
+    {
+      "config_id": "c6",
+      "lr": 0.0001,
+      "weight_decay": 0.3,
+      "enc_dropout": 0.2,
+      "attn_dropout": 0.1
+    },
+    {
+      "config_id": "c7",
+      "lr": 0.0001,
+      "weight_decay": 0.3,
+      "enc_dropout": 0.4,
+      "attn_dropout": 0.2
+    }
+  ]
+}

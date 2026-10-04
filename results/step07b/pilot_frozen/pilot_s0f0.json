@@ -1,0 +1,98 @@
+{
+  "seed": 0,
+  "fold": 0,
+  "device": "cuda",
+  "feature_dims": {
+    "mri": 254,
+    "fdg": 6,
+    "amy": 162,
+    "tau": 160
+  },
+  "encoder_input_widths": {
+    "mri": 508,
+    "fdg": 12,
+    "amy": 324,
+    "tau": 320
+  },
+  "n_parameters": 699931,
+  "epochs_run": 21,
+  "best_epoch": 5,
+  "best_val_macro_f1": 0.6690784586123345,
+  "val_macro_auroc_at_best": 0.822711806529656,
+  "seconds_total": 23.232842445373535,
+  "seconds_per_epoch": 1.1063258307320731,
+  "peak_gpu_mem_mb": 170.111488,
+  "test": {
+    "n": 2647,
+    "macro_auroc": 0.7843516601571011,
+    "macro_f1": 0.6214677013369178,
+    "balanced_accuracy": 0.632650323621362,
+    "f1_per_class": {
+      "CN": 0.6881083368599238,
+      "MCI": 0.508298755186722,
+      "Dementia": 0.6679960119641076
+    },
+    "pn_bacc_uniform": 0.6129091004004812,
+    "pn_bacc_prior": 0.6128202209388142
+  },
+  "test_by_modality_count": {
+    "n_mod=1": {
+      "n": 1130,
+      "macro_auroc": 0.7613487854926024,
+      "macro_f1": 0.5834637846898917,
+      "balanced_accuracy": 0.6041197046249515,
+      "f1_per_class": {
+        "CN": 0.6431623931623932,
+        "MCI": 0.47497089639115253,
+        "Dementia": 0.632258064516129
+      },
+      "pn_bacc_uniform": 0.6007293595855278,
+      "pn_bacc_prior": 0.6007293595855276
+    },
+    "n_mod=2": {
+      "n": 858,
+      "macro_auroc": 0.8010490463732235,
+      "macro_f1": 0.658541173057377,
+      "balanced_accuracy": 0.6583873741185794,
+      "f1_per_class": {
+        "CN": 0.7245657568238213,
+        "MCI": 0.5253940455341506,
+        "Dementia": 0.7256637168141593
+      },
+      "pn_bacc_uniform": 0.6204918331830439,
+      "pn_bacc_prior": 0.6204918331830439
+    },
+    "n_mod=3": {
+      "n": 624,
+      "macro_auroc": 0.805729749679252,
+      "macro_f1": 0.6522348449311579,
+      "balanced_accuracy": 0.6601071101351056,
+      "f1_per_class": {
+        "CN": 0.7239669421487603,
+        "MCI": 0.5482456140350878,
+        "Dementia": 0.6844919786096256
+      },
+      "pn_bacc_uniform": 0.6336208036956482,
+      "pn_bacc_prior": 0.6336208036956482
+    },
+    "n_mod=4": {
+      "n": 35,
+      "macro_auroc": 0.6978660410032959,
+      "macro_f1": 0.2718253968253968,
+      "balanced_accuracy": 0.5160256410256411,
+      "f1_per_class": {
+        "CN": 0.125,
+        "MCI": 0.5238095238095238,
+        "Dementia": 0.16666666666666666
+      },
+      "pn_bacc_uniform": 0.5160256410256411,
+      "pn_bacc_prior": 0.5160256410256411
+    }
+  },
+  "red_flags": {
+    "test_macro_auroc_below_0.70": false,
+    "val_test_gap_above_0.05": false,
+    "best_epoch_below_5": false,
+    "loss_flat_from_epoch_0": false
+  }
+}

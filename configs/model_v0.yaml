@@ -1,0 +1,22 @@
+# Masked-attention fusion model A0 and its trainer (PIPELINE_v2 §3.3, §5, §6; playbook Step 7).
+# Architecture is shared by every neural arm; only the loss/prior changes in later steps.
+
+# --- model (PIPELINE_v2 §3.3 encoders, §5 token/transformer) ---
+d_model: 128
+enc_hidden: 256
+enc_dropout: 0.2
+n_heads: 4
+n_layers: 2
+ff_dim: 256
+attn_dropout: 0.1
+n_classes: 3
+modality_dropout: 0.25   # training only; each observed modality dropped independently, resample if empty
+
+# --- trainer (PIPELINE_v2 §6) ---
+lr: 3.0e-4
+weight_decay: 0.05
+batch_size: 256
+max_epochs: 100
+patience: 15             # early stopping on validation macro-F1, identical for every arm
+seed: 0
+deterministic: true

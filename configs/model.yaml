@@ -1,3 +1,6 @@
+# Hyperparameters frozen by the Step 7b validation-only search (results/step07b/search_summary.json).
+# Every arm A0-A9 trains with this configuration; do not tune per arm.
+# The pre-search configuration is preserved as configs/model_v0.yaml.
 # Masked-attention fusion model A0 and its trainer (PIPELINE_v2 §3.3, §5, §6; playbook Step 7).
 # Architecture is shared by every neural arm; only the loss/prior changes in later steps.
 
@@ -13,8 +16,8 @@ n_classes: 3
 modality_dropout: 0.25   # training only; each observed modality dropped independently, resample if empty
 
 # --- trainer (PIPELINE_v2 §6) ---
-lr: 3.0e-4
-weight_decay: 0.05
+lr: 1.0e-04
+weight_decay: 0.3
 batch_size: 256
 max_epochs: 100
 patience: 15             # early stopping on validation macro-F1, identical for every arm

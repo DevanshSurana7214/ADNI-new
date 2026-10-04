@@ -1,0 +1,29 @@
+[c0 fold 0] best_epoch=2 val_f1=0.6671 val_auroc=0.8196 epochs_run=13
+[c0 fold 1] best_epoch=0 val_f1=0.6523 val_auroc=0.8053 epochs_run=11
+[c1 fold 0] best_epoch=4 val_f1=0.6758 val_auroc=0.8237 epochs_run=15
+[c1 fold 1] best_epoch=3 val_f1=0.6381 val_auroc=0.7887 epochs_run=14
+[c2 fold 0] best_epoch=2 val_f1=0.6652 val_auroc=0.8198 epochs_run=13
+[c2 fold 1] best_epoch=0 val_f1=0.6510 val_auroc=0.8054 epochs_run=11
+[c3 fold 0] best_epoch=4 val_f1=0.6759 val_auroc=0.8233 epochs_run=15
+[c3 fold 1] best_epoch=3 val_f1=0.6380 val_auroc=0.7888 epochs_run=14
+[c4 fold 0] best_epoch=5 val_f1=0.6706 val_auroc=0.8227 epochs_run=16
+[c4 fold 1] best_epoch=1 val_f1=0.6515 val_auroc=0.8027 epochs_run=12
+[c5 fold 0] best_epoch=6 val_f1=0.6688 val_auroc=0.8273 epochs_run=17
+[c5 fold 1] best_epoch=1 val_f1=0.6479 val_auroc=0.8036 epochs_run=12
+[c6 fold 0] best_epoch=5 val_f1=0.6691 val_auroc=0.8227 epochs_run=16
+[c6 fold 1] best_epoch=1 val_f1=0.6515 val_auroc=0.8027 epochs_run=12
+[c7 fold 0] best_epoch=6 val_f1=0.6687 val_auroc=0.8273 epochs_run=17
+[c7 fold 1] best_epoch=1 val_f1=0.6479 val_auroc=0.8037 epochs_run=12
+
+=== mean best-epoch val macro-F1 per config ===
+  c0: 0.6597
+  c1: 0.6569
+  c2: 0.6581
+  c3: 0.6570
+  c4: 0.6611
+  c5: 0.6583
+  c6: 0.6603
+  c7: 0.6583
+
+selected: c6  (tied ['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'])
+[wrote C:\D\5th Sem\ADNI NEW\adni-shortcut\results\step07b]
