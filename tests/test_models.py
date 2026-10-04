@@ -8,7 +8,9 @@ Architecture tests operate on tiny feature dimensions and CPU only. They cover:
   5. determinism: two seeded runs give identical validation loss (CPU) or within 1e-5 (GPU);
   6. gradients reach every encoder when all modalities are present and are exactly zero for an
      entirely absent encoder;
-  7. modality dropout never returns an empty mask and its empirical keep rate matches 1 - p.
+  7. modality dropout never returns an empty mask and its empirical keep rate matches 1 - p;
+  8. ``train_a0`` is reproducible *without* any external seeding (it seeds before building the
+     model), which is how the pilot and every later arm call it.
 """
 from __future__ import annotations
 
@@ -19,7 +21,7 @@ import torch
 import torch.nn as nn
 
 from adni.models import MODALITIES, FusionModel, ModelConfig
-from adni.train import Tensors, TrainConfig, Trainer, set_seed
+from adni.train import Tensors, TrainConfig, Trainer, set_seed, train_a0
 
 DIMS = {"mri": 3, "fdg": 2, "amy": 2, "tau": 2}
 
@@ -161,6 +163,40 @@ def test_modality_dropout_nonempty_and_rate():
     rate = float(eff.float().mean())
     # conditioned on non-empty, q=0.75 gives E[keep] = 3 / (1 - 0.25**4) / 4 ~ 0.7529
     assert abs(rate - 0.75) < 0.02, f"empirical keep rate {rate:.4f} not within 0.02 of 0.75"
+
+
+# --------------------------------------------------------------------------- 8
+def test_train_a0_reproducible_without_external_seeding():
+    """``train_a0`` must fix its own seed before building the model (no external set_seed)."""
+    n_tr, n_va = 96, 48
+    tr = Tensors(_feats(n_tr, seed=11), _mask(n_tr, (1, 1, 1, 1)), torch.arange(n_tr) % 3)
+    va = Tensors(_feats(n_va, seed=12), _mask(n_va, (1, 1, 1, 1)), torch.arange(n_va) % 3)
+    cfg = TrainConfig(seed=0, max_epochs=3, batch_size=32, patience=10 ** 9, device="cpu")
+    runs = []
+    for _ in range(2):
+        model, res, _ = train_a0(DIMS, tr, va, cfg)
+        runs.append((res["history"], {k: v.clone() for k, v in model.state_dict().items()}))
+    assert runs[0][0] == runs[1][0], "train_a0 produced different training histories"
+    for k, v in runs[0][1].items():
+        assert torch.equal(v, runs[1][1][k]), f"train_a0 produced different weights for {k}"
+
+
+# --------------------------------------------------------------------------- 9
+def test_large_batch_inference_chunk_consistent():
+    """A large single batch must not crash, and chunking must give the same predictions."""
+    model = _model().eval()
+    n, chunk = 8192, 1024
+    feats = _feats(n, seed=13)
+    mask = _mask(n, (1, 1, 1, 1))
+    with torch.no_grad():
+        full, _, _ = model(feats, mask)
+        chunked = torch.cat([
+            model({k: v[s:s + chunk] for k, v in feats.items()}, mask[s:s + chunk])[0]
+            for s in range(0, n, chunk)
+        ], dim=0)
+    assert full.shape == (n, 3)
+    assert torch.equal(full.argmax(1), chunked.argmax(1)), "chunking changed a prediction"
+    assert torch.allclose(full, chunked, atol=1e-5), "chunked logits differ beyond float32 round-off"
 
 
 if __name__ == "__main__":

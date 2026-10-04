@@ -177,6 +177,10 @@ def train_a0(
     """Fit A0 on one fold. Returns (model, result_dict, wall_clock_seconds)."""
     from .models import ModelConfig
 
+    # Seed *before* constructing the model so that weight initialisation is reproducible.
+    # ``Trainer.fit`` re-seeds again, so the dropout/permutation stream is independent of the
+    # init draw and a fold is fully deterministic for a given ``cfg.seed``.
+    set_seed(cfg.seed, cfg.deterministic)
     model = FusionModel(ModelConfig(feat_dims=feat_dims, **(model_cfg_kwargs or {})))
     trainer = Trainer(model, cfg)
     t0 = time.time()

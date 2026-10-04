@@ -1,0 +1,20 @@
+{
+  "device": "cuda",
+  "n_episodes": 13240,
+  "chunk_size": 1024,
+  "n_chunks": 13,
+  "one_call_ok": true,
+  "one_call_error": null,
+  "one_call_seconds": 0.23752099997363985,
+  "chunked_seconds": 0.06786119999014772,
+  "logits_shape": [
+    13240,
+    3
+  ],
+  "logits_bitwise_identical": false,
+  "predictions_identical": true,
+  "max_abs_logit_diff": 8.642673492431641e-07,
+  "mean_abs_logit_diff": 1.4512777113395714e-07,
+  "logit_abs_max": 1.0948506593704224,
+  "peak_gpu_mem_mb": 411.72992
+}
