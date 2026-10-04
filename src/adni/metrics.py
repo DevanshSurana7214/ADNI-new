@@ -14,7 +14,7 @@ Conventions
 """
 from __future__ import annotations
 
-from typing import Any, Callable, NamedTuple, Sequence
+from typing import Any, Callable, Mapping, NamedTuple, Sequence
 
 import numpy as np
 import pandas as pd
@@ -167,14 +167,29 @@ class BootstrapCI(NamedTuple):
     n_valid: int
 
 
+def _group_index(groups: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Precompute the row indices of every cluster.
+
+    Returns ``(order, starts)`` such that the rows of cluster ``g`` are
+    ``order[starts[g]:starts[g + 1]]``. Doing this once makes each bootstrap resample O(N + G)
+    instead of O(N x G).
+    """
+    groups = np.asarray(groups)
+    uniq, inv = np.unique(groups, return_inverse=True)
+    order = np.argsort(inv, kind="stable")          # ascending row index within each cluster
+    counts = np.bincount(inv, minlength=len(uniq))
+    starts = np.zeros(len(uniq) + 1, dtype=np.int64)
+    np.cumsum(counts, out=starts[1:])
+    return order, starts
+
+
 def _resample_indices(
-    groups: np.ndarray, rng: np.random.Generator
-) -> list[np.ndarray]:
-    uniq = np.unique(groups)
-    inv = np.searchsorted(uniq, groups)
-    by_group = [np.where(inv == g)[0] for g in range(len(uniq))]
-    chosen = rng.integers(0, len(uniq), size=len(uniq))
-    return [by_group[g] for g in chosen]
+    order: np.ndarray, starts: np.ndarray, rng: np.random.Generator
+) -> np.ndarray:
+    """Resample clusters with replacement and concatenate their (precomputed) row indices."""
+    n_groups = len(starts) - 1
+    chosen = rng.integers(0, n_groups, size=n_groups)
+    return np.concatenate([order[starts[g]:starts[g + 1]] for g in chosen])
 
 
 def cluster_bootstrap(
@@ -192,9 +207,10 @@ def cluster_bootstrap(
     groups = np.asarray(groups)
     point = float(metric_fn(y, proba))
     rng = np.random.default_rng(seed)
+    order, starts = _group_index(groups)
     stats: list[float] = []
     for _ in range(n):
-        idx = np.concatenate(_resample_indices(groups, rng))
+        idx = _resample_indices(order, starts, rng)
         try:
             v = float(metric_fn(y[idx], proba[idx]))
         except Exception:
@@ -205,6 +221,47 @@ def cluster_bootstrap(
         return BootstrapCI(point, float("nan"), float("nan"), 0)
     lo, hi = np.percentile(stats, [2.5, 97.5])
     return BootstrapCI(point, float(lo), float(hi), len(stats))
+
+
+def cluster_bootstrap_multi(
+    metric_fns: Mapping[str, Callable[[np.ndarray, np.ndarray], float]],
+    y: np.ndarray,
+    proba: np.ndarray,
+    groups: np.ndarray,
+    n: int = 2000,
+    seed: int = 0,
+) -> dict[str, BootstrapCI]:
+    """Subject-cluster bootstrap for several scalar metrics sharing the same resamples.
+
+    Equivalent to calling :func:`cluster_bootstrap` once per metric, but the cluster index and the
+    resample are built once per draw, which matters when the metric family is expensive. Each metric
+    keeps its own count of finite draws (``n_valid``), so a metric that is undefined on some resample
+    does not discard the others.
+    """
+    y = np.asarray(y)
+    proba = np.asarray(proba)
+    groups = np.asarray(groups)
+    points = {k: float(f(y, proba)) for k, f in metric_fns.items()}
+    rng = np.random.default_rng(seed)
+    order, starts = _group_index(groups)
+    stats: dict[str, list[float]] = {k: [] for k in metric_fns}
+    for _ in range(n):
+        idx = _resample_indices(order, starts, rng)
+        for k, f in metric_fns.items():
+            try:
+                v = float(f(y[idx], proba[idx]))
+            except Exception:
+                v = float("nan")
+            if np.isfinite(v):
+                stats[k].append(v)
+    out: dict[str, BootstrapCI] = {}
+    for k, vals in stats.items():
+        if vals:
+            lo, hi = np.percentile(vals, [2.5, 97.5])
+            out[k] = BootstrapCI(points[k], float(lo), float(hi), len(vals))
+        else:
+            out[k] = BootstrapCI(points[k], float("nan"), float("nan"), 0)
+    return out
 
 
 def paired_cluster_bootstrap(
@@ -224,9 +281,10 @@ def paired_cluster_bootstrap(
     groups = np.asarray(groups)
     point = float(metric_fn(y, proba_a)) - float(metric_fn(y, proba_b))
     rng = np.random.default_rng(seed)
+    order, starts = _group_index(groups)
     stats: list[float] = []
     for _ in range(n):
-        idx = np.concatenate(_resample_indices(groups, rng))
+        idx = _resample_indices(order, starts, rng)
         try:
             d = float(metric_fn(y[idx], proba_a[idx])) - float(metric_fn(y[idx], proba_b[idx]))
         except Exception:

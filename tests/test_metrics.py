@@ -18,6 +18,7 @@ import pytest
 from adni.metrics import (
     CLASSES,
     cluster_bootstrap,
+    cluster_bootstrap_multi,
     expected_calibration_error,
     holm,
     multiclass_brier,
@@ -118,6 +119,30 @@ def test_cluster_bootstrap_width_close_to_analytic():
     analytic_width = 2 * 1.96 * se
     width = ci.ci_high - ci.ci_low
     assert abs(width - analytic_width) / analytic_width < 0.15, (width, analytic_width)
+
+
+def test_cluster_bootstrap_multi_matches_single():
+    n_subj = 300
+    rng = np.random.default_rng(9)
+    groups = np.arange(n_subj)
+    y = rng.integers(0, 3, size=n_subj)
+    proba = rng.random((n_subj, 3)); proba /= proba.sum(1, keepdims=True)
+
+    def mean_label(yy, pp):
+        return float(np.asarray(yy).mean())
+
+    def auroc(yy, pp):
+        return natural_metrics(yy, pp)["macro_auroc"]
+
+    multi = cluster_bootstrap_multi({"mean": mean_label, "auroc": auroc}, y, proba, groups,
+                                     n=300, seed=5)
+    single = cluster_bootstrap(mean_label, y, proba, groups, n=300, seed=5)
+    # Same rng seed and same draw order -> the shared-resample version reproduces the single metric.
+    assert multi["mean"].point == pytest.approx(single.point)
+    assert multi["mean"].ci_low == pytest.approx(single.ci_low)
+    assert multi["mean"].ci_high == pytest.approx(single.ci_high)
+    assert set(multi) == {"mean", "auroc"}
+    assert multi["auroc"].ci_low <= multi["auroc"].point <= multi["auroc"].ci_high
 
 
 def test_paired_cluster_bootstrap_and_holm():
