@@ -1,0 +1,44 @@
+STEP 5 SYNTHETIC CHECKS (actual values)
+========================================================================
+[1] perfect predictions (n=300)
+    macro-AUROC=1.000000  macro-F1=1.000000  balanced_acc=1.000000  Brier=0.000000
+
+[2] random predictions on balanced data (n=20000)
+    macro-AUROC=0.496257   (chance 0.5, tolerance 0.03)
+
+[3] hand-computed 6-sample example
+    y      = [0, 1, 2, 0, 1, 2]
+    proba  =
+             [0.6, 0.3, 0.1]
+             [0.2, 0.7, 0.1]
+             [0.1, 0.2, 0.7]
+             [0.2, 0.3, 0.5]
+             [0.1, 0.8, 0.1]
+             [0.5, 0.3, 0.2]
+    argmax = [0, 1, 2, 2, 1, 0]  (classes ['CN', 'MCI', 'Dementia'])
+    macro-AUROC        = 0.8958333   (mean of 0.875, 0.9375, 0.875)
+    macro-F1           = 0.6666667   (= 2/3)
+    balanced accuracy  = 0.6666667   (= 2/3)
+    per-class F1       = CN 0.5000, MCI 1.0000, Dementia 0.5000
+    multiclass Brier   = 0.4266667   (0.4266667)
+    ECE (15 bins)      = 0.3666667   (0.3666667)
+
+[4] ECE of a perfectly calibrated synthetic sample (n=40000)
+    ECE = 0.005561   (< 0.02 required)
+
+[5] cluster-bootstrap CI width vs analytic (p=0.6, n_subjects=400, 2000 resamples)
+    bootstrap width=0.097500   analytic width=0.096020   relative diff=1.54%
+
+[6] PN weights make classes balanced within each pattern (alpha=0, unclipped)
+    mean(w) = 1.000000000
+    pattern 1000: weighted class shares = CN 0.500000000, MCI 0.500000000
+    pattern 1111: weighted class shares = MCI 0.500000000, Dementia 0.500000000
+
+[7] pn_balanced_accuracy (weights upweight the rare classes)
+    perfect pred -> 1.000000   (1.0)
+    all-MCI pred -> 0.333333   (1/3)
+
+[8] holm([0.01, 0.04, 0.03, 0.5]) = [0.04, 0.09, 0.09, 0.5]
+    cluster_bootstrap_multi matches cluster_bootstrap: point 1.040000000 vs 1.040000000; CI [0.944917, 1.133333] vs [0.944917, 1.133333]
+
+Brier helper check: multiclass_brier([0,1,2],[one-hot]) = 0.000000   (0.0)

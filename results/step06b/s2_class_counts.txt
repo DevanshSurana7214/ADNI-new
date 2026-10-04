@@ -1,0 +1,17 @@
+S2 class counts (allocation by first-enrolment ORIGPROT: ADNI1/GO/2 train-side, ADNI3/4 test-side)
+
+split   episodes     CN    MCI  Dementia      CN%   MCI%   Dem%      report % (Step 3)
+train       8716   3001   3862      1853    34.43  44.31  21.26         34.2/44.4/21.3
+val          959    323    414       222    33.68  43.17  23.15         38.2/39.4/22.4
+test        3565   1939   1242       384    54.39  34.84  10.77         54.1/35.0/10.9
+
+Difference vs results/step03/REPORT.md (which printed 54.1/35.0/10.9 for the test side):
+  actual test-side counts = CN 1,939 / MCI 1,242 / Dementia 384  (3,565 episodes)
+  actual test-side share  = 54.39 / 34.84 / 10.77 %  (= 54.4/34.8/10.8 rounding to 1 dp)
+  the Step 3 report percentages are stale/inconsistent with the frozen splits.json:
+    - the S2 test row differs by ~0.3 pp (54.1 vs 54.4), within the range of a stale table,
+    - the S2 *val* row differs by >4 pp (38.2/39.4/22.4 vs actual 33.7/43.2/23.1), which
+      cannot be rounding. The episode counts (8,716 / 959 / 3,565) do match.
+  => the frozen splits.json is authoritative and reproduces 1,939/1,242/384 exactly;
+     the Step 3 report's percentage table is a documentation error, not a data change.
+     (This is an independent recomputation; src/adni/splits.py is not used.)

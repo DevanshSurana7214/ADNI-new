@@ -1,0 +1,9 @@
+{
+  "rule": "if B0b macro-AUROC CI lower bound > 0.55 -> EXCLUDE mri_field_strength from the primary neural models (keep as a sensitivity arm); else keep it",
+  "threshold": 0.55,
+  "b0b_macro_auroc_point": 0.5411710871852002,
+  "b0b_macro_auroc_ci_low": 0.5272892372725168,
+  "b0b_macro_auroc_ci_high": 0.5555483018864825,
+  "branch": "KEEP mri_field_strength in the primary models",
+  "exclude": false
+}

@@ -1,0 +1,137 @@
+{
+  "total_gain": 1817398.0177134275,
+  "mask_gain": 8.702999830245972,
+  "mask_gain_share": 4.788714274705611e-06,
+  "mask_bits": {
+    "mask_mri": 0.0,
+    "mask_fdg": 8.702999830245972,
+    "mask_amy": 0.0,
+    "mask_tau": 0.0
+  },
+  "field_strength_rank": 40,
+  "field_strength_gain": 6579.650593757629,
+  "field_strength_gain_share": 0.00362036853216989,
+  "n_features": 592,
+  "top20": [
+    {
+      "rank": 1,
+      "feature": "mri_ST24TA",
+      "gain": 103907.09280085564,
+      "gain_share": 0.05717354800000668
+    },
+    {
+      "rank": 2,
+      "feature": "mri_ST29SV",
+      "gain": 102807.17356133461,
+      "gain_share": 0.056568331515339826
+    },
+    {
+      "rank": 3,
+      "feature": "fdg_MetaROI_MEAN",
+      "gain": 84473.94631028175,
+      "gain_share": 0.04648070785097656
+    },
+    {
+      "rank": 4,
+      "feature": "mri_ST12SV",
+      "gain": 44641.91829276085,
+      "gain_share": 0.024563644208728367
+    },
+    {
+      "rank": 5,
+      "feature": "fdg_MetaROI_MAX",
+      "gain": 40852.320100069046,
+      "gain_share": 0.022478466302867265
+    },
+    {
+      "rank": 6,
+      "feature": "mri_ST88SV",
+      "gain": 38783.28470945358,
+      "gain_share": 0.021340006058908907
+    },
+    {
+      "rank": 7,
+      "feature": "mri_ST83TA",
+      "gain": 31157.839995861053,
+      "gain_share": 0.017144202696480607
+    },
+    {
+      "rank": 8,
+      "feature": "mri_ST32TA",
+      "gain": 29684.38718700409,
+      "gain_share": 0.016333454145807707
+    },
+    {
+      "rank": 9,
+      "feature": "mri_ST89SV",
+      "gain": 22945.427107810974,
+      "gain_share": 0.012625427608136125
+    },
+    {
+      "rank": 10,
+      "feature": "mri_ST30SV",
+      "gain": 22540.029244422913,
+      "gain_share": 0.012402362622130408
+    },
+    {
+      "rank": 11,
+      "feature": "mri_ST40TA",
+      "gain": 21073.42489719391,
+      "gain_share": 0.011595382349820977
+    },
+    {
+      "rank": 12,
+      "feature": "mri_ST71SV",
+      "gain": 17149.405789136887,
+      "gain_share": 0.009436241055612868
+    },
+    {
+      "rank": 13,
+      "feature": "fdg_Top50PonsVermis_MEAN",
+      "gain": 13970.049234390259,
+      "gain_share": 0.0076868408010958315
+    },
+    {
+      "rank": 14,
+      "feature": "mri_ST24CV",
+      "gain": 12828.353199720383,
+      "gain_share": 0.007058637169562047
+    },
+    {
+      "rank": 15,
+      "feature": "fdg_Top50PonsVermis_MAX",
+      "gain": 12204.946468114853,
+      "gain_share": 0.006715615593919594
+    },
+    {
+      "rank": 16,
+      "feature": "mri_ST31TA",
+      "gain": 11651.713054180145,
+      "gain_share": 0.0064112059882401725
+    },
+    {
+      "rank": 17,
+      "feature": "tau_LEFT_AMYGDALA_SUVR",
+      "gain": 10144.370356559753,
+      "gain_share": 0.0055818099600014786
+    },
+    {
+      "rank": 18,
+      "feature": "mri_ST32CV",
+      "gain": 9816.870787858963,
+      "gain_share": 0.005401607513697043
+    },
+    {
+      "rank": 19,
+      "feature": "fdg_MetaROI_STDEV",
+      "gain": 9747.890241384506,
+      "gain_share": 0.0053636518508196045
+    },
+    {
+      "rank": 20,
+      "feature": "mri_ST9SV",
+      "gain": 9735.684125185013,
+      "gain_share": 0.005356935591595964
+    }
+  ]
+}

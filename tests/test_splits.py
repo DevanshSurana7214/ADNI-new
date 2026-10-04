@@ -4,7 +4,9 @@ Loads results/step03/splits.json and asserts:
 * S1 (3 seeds × 5 folds): for every (seed, fold) train/val/test are pairwise disjoint on
   episode_id AND on RID; their union is all episodes; every RID is in exactly one of train+val /
   test.
-* S2: 1,784 training-side and 1,361 test-side subjects, zero overlap between train-side and test.
+* S2: 1,784 training-side and 1,361 test-side subjects, zero overlap between train-side and test;
+  train/val/test disjoint on episode_id AND RID, union = all episodes; class counts independently
+  recomputed from docs/episodes.csv (CN/MCI/Dementia = 1939/1242/384 on the test side).
 """
 from __future__ import annotations
 
@@ -20,6 +22,13 @@ EPISODES = PROJECT_ROOT / "docs" / "episodes.csv"
 SPLITS = PROJECT_ROOT / "results" / "step03" / "splits.json"
 S2_TRAIN_SUBJECTS_EXPECTED = 1784
 S2_TEST_SUBJECTS_EXPECTED = 1361
+# Independently recomputed from docs/episodes.csv (see test_s2_class_counts_from_episodes).
+S2_CLASS_COUNTS = {
+    "train": {"CN": 3001, "MCI": 3862, "Dementia": 1853},
+    "val": {"CN": 323, "MCI": 414, "Dementia": 222},
+    "test": {"CN": 1939, "MCI": 1242, "Dementia": 384},
+}
+S2_EPISODES = {"train": 8716, "val": 959, "test": 3565}
 
 
 @pytest.fixture(scope="module")
@@ -54,8 +63,10 @@ def test_s1_disjoint_and_union_all(ep: pd.DataFrame, splits: dict) -> None:
             union = sets["train"] | sets["val"] | sets["test"]
             assert union == all_eids, f"{sk}/{fk}: union != all episodes (miss {len(all_eids - union)}, extra {len(union - all_eids)})"
             rid_sets = _rid_sets(ep, ids)
+            assert rid_sets["train"] & rid_sets["val"] == set(), f"{sk}/{fk}: RID overlap train/val"
+            assert rid_sets["train"] & rid_sets["test"] == set(), f"{sk}/{fk}: RID overlap train/test"
+            assert rid_sets["val"] & rid_sets["test"] == set(), f"{sk}/{fk}: RID overlap val/test"
             tr_val_rids = rid_sets["train"] | rid_sets["val"]
-            assert tr_val_rids & rid_sets["test"] == set(), f"{sk}/{fk}: RID overlap train+val / test"
             assert tr_val_rids | rid_sets["test"] == all_rids, f"{sk}/{fk}: not all RIDs covered"
 
 
@@ -93,12 +104,29 @@ def test_s2_counts_and_disjointness(ep: pd.DataFrame, splits: dict) -> None:
     assert sets["train"] & sets["val"] == set()
     assert sets["train"] & sets["test"] == set()
     assert sets["val"] & sets["test"] == set()
+    assert sets["train"] | sets["val"] | sets["test"] == set(ep.index), "S2 union != all episodes"
     rid_sets = _rid_sets(ep, ids)
+    assert rid_sets["train"] & rid_sets["val"] == set(), "S2 RID overlap train/val"
     train_side_rids = rid_sets["train"] | rid_sets["val"]
     assert train_side_rids & rid_sets["test"] == set(), "S2 train-side ∩ test RID overlap"
     assert train_side_rids | rid_sets["test"] == set(ep["RID"].values), "S2 does not cover all RIDs"
     assert len(train_side_rids) == S2_TRAIN_SUBJECTS_EXPECTED, "S2 train-side RID count"
     assert len(rid_sets["test"]) == S2_TEST_SUBJECTS_EXPECTED, "S2 test RID count"
+
+
+def test_s2_class_counts_from_episodes(ep: pd.DataFrame, splits: dict) -> None:
+    """Independently recompute the S2 train/val/test class counts straight from docs/episodes.csv.
+
+    The frozen splits.json must give CN/MCI/Dementia = 1939/1242/384 on the S2 test side
+    (3,565 episodes). This recomputation does not use src/adni/splits.py at all.
+    """
+    diag = ep["DIAGNOSIS"]
+    for part in ("train", "val", "test"):
+        ids = splits["s2"]["episode_ids"][part]
+        assert len(ids) == S2_EPISODES[part], f"S2 {part}: episode count {len(ids)} != {S2_EPISODES[part]}"
+        counts = diag.loc[ids].value_counts().reindex(["CN", "MCI", "Dementia"]).fillna(0).astype(int)
+        assert counts.to_dict() == S2_CLASS_COUNTS[part], (
+            f"S2 {part}: class counts {counts.to_dict()} != {S2_CLASS_COUNTS[part]}")
 
 
 def test_s1_fold_counts_reasonable(ep: pd.DataFrame, splits: dict) -> None:
