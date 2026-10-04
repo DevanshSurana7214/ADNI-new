@@ -1,0 +1,24 @@
+Stage 2 preprocessing audit - 16 fits (15 S1 + S2)
+fit tag -> kept features per block (mri, fdg, amy, tau)
+  s1_seed0_fold0       mri=254  fdg=6  amy=162  tau=160
+  s1_seed0_fold1       mri=254  fdg=6  amy=162  tau=160
+  s1_seed0_fold2       mri=254  fdg=6  amy=162  tau=160
+  s1_seed0_fold3       mri=254  fdg=6  amy=162  tau=160
+  s1_seed0_fold4       mri=254  fdg=6  amy=162  tau=160
+  s1_seed1_fold0       mri=254  fdg=6  amy=162  tau=160
+  s1_seed1_fold1       mri=254  fdg=6  amy=162  tau=160
+  s1_seed1_fold2       mri=254  fdg=6  amy=162  tau=160
+  s1_seed1_fold3       mri=254  fdg=6  amy=162  tau=160
+  s1_seed1_fold4       mri=254  fdg=6  amy=162  tau=160
+  s1_seed2_fold0       mri=254  fdg=6  amy=162  tau=160
+  s1_seed2_fold1       mri=254  fdg=6  amy=162  tau=160
+  s1_seed2_fold2       mri=254  fdg=6  amy=162  tau=160
+  s1_seed2_fold3       mri=254  fdg=6  amy=162  tau=160
+  s1_seed2_fold4       mri=254  fdg=6  amy=162  tau=160
+  s2                   mri=254  fdg=6  amy=162  tau=160
+  [mri] kept min=254 max=254 (at min: 16 fits, at max: 16 fits)
+  [fdg] kept min=6 max=6 (at min: 16 fits, at max: 16 fits)
+  [amy] kept min=162 max=162 (at min: 16 fits, at max: 16 fits)
+  [tau] kept min=160 max=160 (at min: 16 fits, at max: 16 fits)
+
+No NaN/inf in any transform output (train/val/test x 16 fits x 4 blocks).

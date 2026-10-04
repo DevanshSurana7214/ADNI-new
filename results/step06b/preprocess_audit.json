@@ -1,0 +1,30 @@
+{
+  "n_fits": 16,
+  "kept": {
+    "mri": {
+      "min": 254,
+      "max": 254,
+      "n_fits_at_min": 16,
+      "n_fits_at_max": 16
+    },
+    "fdg": {
+      "min": 6,
+      "max": 6,
+      "n_fits_at_min": 16,
+      "n_fits_at_max": 16
+    },
+    "amy": {
+      "min": 162,
+      "max": 162,
+      "n_fits_at_min": 16,
+      "n_fits_at_max": 16
+    },
+    "tau": {
+      "min": 160,
+      "max": 160,
+      "n_fits_at_min": 16,
+      "n_fits_at_max": 16
+    }
+  },
+  "nonfinite_outputs": []
+}
