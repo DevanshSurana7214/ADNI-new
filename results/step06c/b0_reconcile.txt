@@ -1,0 +1,15 @@
+B0 reconciliation (pattern-only logistic regression, macro-OvR AUROC on pooled OOF)
+stage3 seed = 0
+
+run                                                  macro-AUROC    BAcc
+(a1) Stage 3 own partition, full train                    0.6182  0.4121
+(a2) Stage 3 own partition, -10% val holdout              0.6200  0.4124
+(b1) frozen Step 3 splits, train only (Step 6)            0.6200  0.4124
+(b2) frozen Step 3 splits, train+val (no holdout)         0.6182  0.4121
+Step 6 B0 (3-seed mean, frozen splits)                    0.6024
+
+Encoding isolation (Step 6's exact 4-bit B0 definition):
+(c1) frozen splits, 4-bit, train only, seed 0             0.6040  0.4026
+(c2) frozen splits, 4-bit, train+val, seed 0              0.6028  0.4026
+(c3) frozen splits, 4-bit, 3-seed mean                    0.6024  0.4026
+(c4) own partition, 4-bit, seed 0                         0.6028  0.4026

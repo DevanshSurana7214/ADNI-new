@@ -1,0 +1,50 @@
+{
+  "stage3_seed": 0,
+  "a1_own_partition_full_train": {
+    "macro_auroc": 0.618154121722193,
+    "balanced_accuracy": 0.41205362233115395,
+    "description": "Stage 3 shortcut_benchmark (unmodified)"
+  },
+  "a2_own_partition_with_val_holdout": {
+    "macro_auroc": 0.6200196516995574,
+    "balanced_accuracy": 0.41235566413373936,
+    "n_train_subject_sizes": [
+      [
+        2512,
+        2260
+      ]
+    ]
+  },
+  "b1_frozen_splits_train_only": {
+    "macro_auroc": 0.6200196516995574,
+    "balanced_accuracy": 0.41235566413373936,
+    "n_train_subject_sizes": []
+  },
+  "b2_frozen_splits_train_plus_val": {
+    "macro_auroc": 0.618154121722193,
+    "balanced_accuracy": 0.41205362233115395,
+    "n_train_subject_sizes": []
+  },
+  "c1_frozen_4bit_train_only_seed0": {
+    "macro_auroc": 0.6040122257546564,
+    "balanced_accuracy": 0.4025626000144025
+  },
+  "c2_frozen_4bit_train_plus_val_seed0": {
+    "macro_auroc": 0.6027881891204929,
+    "balanced_accuracy": 0.4025626000144025
+  },
+  "c3_frozen_4bit_3seed_mean": {
+    "macro_auroc": 0.6023715733002256,
+    "balanced_accuracy": 0.4025626000144025,
+    "per_seed_auroc": [
+      0.6040122257546564,
+      0.6021399306571258,
+      0.6009625634888949
+    ]
+  },
+  "c4_own_partition_4bit_seed0": {
+    "macro_auroc": 0.6027881891204929,
+    "balanced_accuracy": 0.4025626000144025
+  },
+  "step6_b0_3seed_mean_macro_auroc": 0.6023715733002256
+}
