@@ -15,6 +15,7 @@ The figures in ``adni_stage3_profile.py`` and ``joint_profile.csv`` are reproduc
 from __future__ import annotations
 
 import enum
+import itertools
 from typing import Sequence
 
 import numpy as np
@@ -139,3 +140,109 @@ def cramers_v(tab: np.ndarray) -> float:
     expected = row * col / tot
     chi2 = ((t - expected) ** 2 / expected).sum()
     return float(np.sqrt(chi2 / (tot * (min(t.shape) - 1))))
+
+
+# --------------------------------------------------------------------------- section 6 mask-process priors
+MODALITIES: Sequence[str] = ("mri", "fdg", "amy", "tau")
+
+
+def _as_bits(m) -> tuple[int, ...]:
+    """Coerce a pattern (str of 0/1 or a sequence of ints/bools) to a tuple of ints 0/1."""
+    if isinstance(m, str):
+        bits = tuple(int(c) for c in m.strip())
+    else:
+        bits = tuple(int(b) for b in m)
+    if any(b not in (0, 1) for b in bits):
+        raise ValueError(f"pattern {m!r} must contain only 0/1")
+    return bits
+
+
+def _bits_to_str(bits: Sequence[int]) -> str:
+    return "".join(str(int(b)) for b in bits)
+
+
+def submask_kernel(m, p_drop: float) -> dict[str, float]:
+    """Exact distribution K(m_tilde | m) over the non-empty sub-masks of *m*.
+
+    Each observed modality is kept independently with probability ``1 - p_drop``; a draw that
+    becomes empty is repeated until it is non-empty. Conditional on non-empty, a sub-mask that
+    keeps ``r`` of the ``k`` observed modalities has probability
+    ``(1-p)^r * p^(k-r) / (1 - p^k)``. This is exactly what ``FusionModel.modality_dropout``
+    samples (independent per-modality keep followed by a resample of empty rows).
+    """
+    bits = _as_bits(m)
+    observed = [i for i, b in enumerate(bits) if b == 1]
+    k = len(observed)
+    if k == 0:
+        return {}
+    if p_drop <= 0.0:
+        return {_bits_to_str(bits): 1.0}
+    if p_drop >= 1.0:
+        raise ValueError("p_drop must be in [0, 1)")
+    denom = 1.0 - p_drop ** k
+    out: dict[str, float] = {}
+    for r in range(1, k + 1):
+        prob = ((1.0 - p_drop) ** r) * (p_drop ** (k - r)) / denom
+        for combo in itertools.combinations(observed, r):
+            sub = [0] * len(bits)
+            for i in combo:
+                sub[i] = 1
+            key = _bits_to_str(sub)
+            out[key] = out.get(key, 0.0) + prob
+    return out
+
+
+def _joint_and_patterns(P_cm, patterns=None) -> tuple[np.ndarray, list[str]]:
+    """Resolve the smoothed joint and its natural-pattern column labels."""
+    if isinstance(P_cm, pd.DataFrame):
+        pats = [str(c) for c in P_cm.columns]
+        P = P_cm.to_numpy(dtype=float)
+    else:
+        P = np.asarray(P_cm, dtype=float)
+        if patterns is None:
+            raise ValueError("patterns must be given when P_cm is an array")
+        pats = [str(p) for p in patterns]
+    if P.ndim != 2 or P.shape[1] != len(pats):
+        raise ValueError("P_cm must be (n_classes, len(patterns))")
+    return P, pats
+
+
+def pi_table(P_cm, p_drop: float, patterns=None) -> pd.DataFrame:
+    """pi(c | m_tilde) proportional to ``sum_m P(c,m) K(m_tilde | m)``.
+
+    ``P_cm`` is the smoothed joint (a DataFrame whose columns are the natural patterns, or an array
+    plus *patterns*); rows are CLASSES. The returned DataFrame has index = CLASSES and one column
+    per sub-mask that can occur (non-empty sub-mask of some natural pattern with positive mass).
+    At ``p_drop = 0`` the kernel is a point mass and this equals ``P(c | m)``.
+    """
+    P, pats = _joint_and_patterns(P_cm, patterns)
+    num: dict[str, np.ndarray] = {}
+    for j, m in enumerate(pats):
+        for sub, prob in submask_kernel(m, p_drop).items():
+            if sub not in num:
+                num[sub] = np.zeros(P.shape[0], dtype=float)
+            num[sub] = num[sub] + P[:, j] * prob
+    subs = sorted(s for s, v in num.items() if float(v.sum()) > 0.0)
+    table = np.zeros((P.shape[0], len(subs)), dtype=float)
+    for c, s in enumerate(subs):
+        v = num[s]
+        table[:, c] = v / v.sum()
+    return pd.DataFrame(table, index=list(CLASSES), columns=subs)
+
+
+def pattern_marginal(P_cm, p_drop: float, patterns=None) -> pd.Series:
+    """P(m_tilde) = ``sum_m P(m) K(m_tilde | m)`` under the same mask process."""
+    P, pats = _joint_and_patterns(P_cm, patterns)
+    Pm = P.sum(axis=0)
+    out: dict[str, float] = {}
+    for j, m in enumerate(pats):
+        for sub, prob in submask_kernel(m, p_drop).items():
+            out[sub] = out.get(sub, 0.0) + float(Pm[j]) * prob
+    subs = sorted(s for s, v in out.items() if v > 0.0)
+    return pd.Series([out[s] for s in subs], index=subs, dtype=float)
+
+
+def class_prior(P_cm) -> pd.Series:
+    """P(c) = row sums of the smoothed joint (DataFrame or (3, P) array)."""
+    P = P_cm.to_numpy(dtype=float) if isinstance(P_cm, pd.DataFrame) else np.asarray(P_cm, float)
+    return pd.Series(P.sum(axis=1), index=list(CLASSES), dtype=float)

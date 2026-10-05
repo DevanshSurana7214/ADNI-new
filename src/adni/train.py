@@ -25,6 +25,7 @@ import torch
 import torch.nn as nn
 from sklearn.metrics import f1_score, roc_auc_score
 
+from .losses import Priors, arm_loss, mask_to_pattern
 from .models import MODALITIES, FusionModel
 
 
@@ -38,6 +39,8 @@ class TrainConfig:
     seed: int = 0
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     deterministic: bool = True
+    arm: str = "A0"          # loss arm A0-A4 (PIPELINE_v2 section 6); one config switch for all arms
+    tau: float = 1.0         # A4 logit-adjustment temperature (1.0 per the spec)
 
 
 @dataclass
@@ -99,11 +102,12 @@ def _macro_auroc(y: np.ndarray, proba: np.ndarray) -> float:
 
 
 class Trainer:
-    """Plain cross-entropy trainer (arm A0)."""
+    """Shared trainer for arms A0-A4; only the loss (and its training-split priors) changes."""
 
-    def __init__(self, model: FusionModel, cfg: TrainConfig) -> None:
+    def __init__(self, model: FusionModel, cfg: TrainConfig, priors: Priors | None = None) -> None:
         self.model = model
         self.cfg = cfg
+        self.priors = priors
         self.device = cfg.device
         self.model.to(self.device)
 
@@ -143,8 +147,9 @@ class Trainer:
                 idx = perm[start:start + cfg.batch_size]
                 batch = train.index(idx)
                 opt.zero_grad(set_to_none=True)
-                logits, _, _ = self.model(batch.feats, batch.mask, apply_modality_dropout=True)
-                loss = nn.functional.cross_entropy(logits, batch.y)
+                logits, _, eff = self.model(batch.feats, batch.mask, apply_modality_dropout=True)
+                patterns = mask_to_pattern(eff)
+                loss = arm_loss(cfg.arm, logits, batch.y, patterns, self.priors, cfg.tau)
                 loss.backward()
                 opt.step()
                 epoch_loss += float(loss.item()) * len(idx)
@@ -167,6 +172,38 @@ class Trainer:
                 "best_state": best_state}
 
 
+def train_arm(
+    arm: str,
+    feat_dims: dict[str, int],
+    train: Tensors,
+    val: Tensors,
+    cfg: TrainConfig,
+    model_cfg_kwargs: dict | None = None,
+    priors: Priors | None = None,
+) -> tuple[FusionModel, dict, float]:
+    """Fit loss arm *arm* on one fold. Returns (model, result_dict, wall_clock_seconds).
+
+    This is the REAL entry point for every arm; ``train_a0`` delegates to it. It seeds *before*
+    constructing the model so that weight initialisation is reproducible, and ``Trainer.fit``
+    re-seeds again so the dropout/permutation stream is independent of the init draw. A fold is
+    therefore fully deterministic for a given ``cfg.seed``.
+    """
+    from dataclasses import replace
+
+    from .models import ModelConfig
+
+    cfg = replace(cfg, arm=arm)
+    set_seed(cfg.seed, cfg.deterministic)
+    model = FusionModel(ModelConfig(feat_dims=feat_dims, **(model_cfg_kwargs or {})))
+    trainer = Trainer(model, cfg, priors)
+    t0 = time.time()
+    result = trainer.fit(train, val)
+    result["seconds"] = time.time() - t0
+    result["n_parameters"] = model.num_parameters()
+    result["arm"] = arm
+    return model, result, result["seconds"]
+
+
 def train_a0(
     feat_dims: dict[str, int],
     train: Tensors,
@@ -174,17 +211,5 @@ def train_a0(
     cfg: TrainConfig,
     model_cfg_kwargs: dict | None = None,
 ) -> tuple[FusionModel, dict, float]:
-    """Fit A0 on one fold. Returns (model, result_dict, wall_clock_seconds)."""
-    from .models import ModelConfig
-
-    # Seed *before* constructing the model so that weight initialisation is reproducible.
-    # ``Trainer.fit`` re-seeds again, so the dropout/permutation stream is independent of the
-    # init draw and a fold is fully deterministic for a given ``cfg.seed``.
-    set_seed(cfg.seed, cfg.deterministic)
-    model = FusionModel(ModelConfig(feat_dims=feat_dims, **(model_cfg_kwargs or {})))
-    trainer = Trainer(model, cfg)
-    t0 = time.time()
-    result = trainer.fit(train, val)
-    result["seconds"] = time.time() - t0
-    result["n_parameters"] = model.num_parameters()
-    return model, result, result["seconds"]
+    """Fit A0 (plain cross-entropy) on one fold. Equivalent to ``train_arm('A0', ...)``."""
+    return train_arm("A0", feat_dims, train, val, cfg, model_cfg_kwargs)

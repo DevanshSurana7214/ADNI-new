@@ -1,0 +1,197 @@
+{
+  "seed": 0,
+  "fold": 0,
+  "device": "cuda",
+  "config": "C:\\D\\5th Sem\\ADNI NEW\\adni-shortcut\\configs\\model.yaml",
+  "frozen_lr": 0.0001,
+  "frozen_weight_decay": 0.3,
+  "p_drop": 0.25,
+  "n_submasks": 15,
+  "feature_dims": {
+    "mri": 254,
+    "fdg": 6,
+    "amy": 162,
+    "tau": 160
+  },
+  "arms": {
+    "A0": {
+      "arm": "A0",
+      "best_epoch": 5,
+      "epochs_run": 21,
+      "n_parameters": 699931,
+      "seconds": 23.820525884628296,
+      "val_macro_f1_at_best": 0.6690784586123345,
+      "val_macro_auroc_at_best": 0.822711806529656,
+      "test_primary": {
+        "n": 2647,
+        "macro_auroc": 0.7843516601571011,
+        "macro_f1": 0.6214677013369178,
+        "balanced_accuracy": 0.632650323621362,
+        "pn_bacc_uniform": 0.6129091004004812,
+        "pn_bacc_prior": 0.6128202209388142,
+        "f1_CN": 0.6881083368599238,
+        "f1_MCI": 0.508298755186722,
+        "f1_Dementia": 0.6679960119641076
+      },
+      "test_secondary": null,
+      "mask_sensitivity": 0.08589300884197709,
+      "red_flags": {
+        "best_epoch_below_5": false,
+        "val_test_gap_above_0.05": false,
+        "nan_loss": false
+      }
+    },
+    "A1": {
+      "arm": "A1",
+      "best_epoch": 4,
+      "epochs_run": 20,
+      "n_parameters": 699931,
+      "seconds": 22.29643964767456,
+      "val_macro_f1_at_best": 0.6419007907306297,
+      "val_macro_auroc_at_best": 0.8198298662351299,
+      "test_primary": {
+        "n": 2647,
+        "macro_auroc": 0.7854993235093083,
+        "macro_f1": 0.6083663470540933,
+        "balanced_accuracy": 0.6478862748046831,
+        "pn_bacc_uniform": 0.6314863887658645,
+        "pn_bacc_prior": 0.6313983154282915,
+        "f1_CN": 0.6909398814563928,
+        "f1_MCI": 0.45892351274787535,
+        "f1_Dementia": 0.675235646958012
+      },
+      "test_secondary": {
+        "n": 2647,
+        "macro_auroc": 0.7893501751351214,
+        "macro_f1": 0.6198558472799515,
+        "balanced_accuracy": 0.6319728168462942,
+        "pn_bacc_uniform": 0.6122362583576525,
+        "pn_bacc_prior": 0.6121470852896733,
+        "f1_CN": 0.6913265306122449,
+        "f1_MCI": 0.5075090626618333,
+        "f1_Dementia": 0.6607319485657764
+      },
+      "mask_sensitivity": 0.08512882852076802,
+      "red_flags": {
+        "best_epoch_below_5": true,
+        "val_test_gap_above_0.05": false,
+        "nan_loss": false
+      }
+    },
+    "A2": {
+      "arm": "A2",
+      "best_epoch": 5,
+      "epochs_run": 21,
+      "n_parameters": 699931,
+      "seconds": 23.54627752304077,
+      "val_macro_f1_at_best": 0.6581881449103056,
+      "val_macro_auroc_at_best": 0.8200506177224746,
+      "test_primary": {
+        "n": 2647,
+        "macro_auroc": 0.7845827590485005,
+        "macro_f1": 0.6179132907020697,
+        "balanced_accuracy": 0.6286442033054783,
+        "pn_bacc_uniform": 0.6102609228401679,
+        "pn_bacc_prior": 0.610178578710563,
+        "f1_CN": 0.691182615963226,
+        "f1_MCI": 0.5026178010471204,
+        "f1_Dementia": 0.6599394550958627
+      },
+      "test_secondary": null,
+      "mask_sensitivity": 0.08848764422284346,
+      "red_flags": {
+        "best_epoch_below_5": false,
+        "val_test_gap_above_0.05": false,
+        "nan_loss": false
+      }
+    },
+    "A3": {
+      "arm": "A3",
+      "best_epoch": 12,
+      "epochs_run": 28,
+      "n_parameters": 699931,
+      "seconds": 32.002766847610474,
+      "val_macro_f1_at_best": 0.6325306961683429,
+      "val_macro_auroc_at_best": 0.8044301615016359,
+      "test_primary": {
+        "n": 2647,
+        "macro_auroc": 0.7577671120129051,
+        "macro_f1": 0.5954889291283335,
+        "balanced_accuracy": 0.6080517472438909,
+        "pn_bacc_uniform": 0.6046497804584953,
+        "pn_bacc_prior": 0.604539052499773,
+        "f1_CN": 0.6408988764044944,
+        "f1_MCI": 0.49480455220188024,
+        "f1_Dementia": 0.6507633587786259
+      },
+      "test_secondary": null,
+      "mask_sensitivity": 0.09748224400314309,
+      "red_flags": {
+        "best_epoch_below_5": false,
+        "val_test_gap_above_0.05": false,
+        "nan_loss": false
+      }
+    },
+    "A4": {
+      "arm": "A4",
+      "best_epoch": 12,
+      "epochs_run": 28,
+      "n_parameters": 699931,
+      "seconds": 31.152005910873413,
+      "val_macro_f1_at_best": 0.6325051291228665,
+      "val_macro_auroc_at_best": 0.8032064069796148,
+      "test_primary": {
+        "n": 2647,
+        "macro_auroc": 0.7553068191993004,
+        "macro_f1": 0.5872667163146436,
+        "balanced_accuracy": 0.6035970495215088,
+        "pn_bacc_uniform": 0.5987370705503593,
+        "pn_bacc_prior": 0.5986304188004287,
+        "f1_CN": 0.6411609498680739,
+        "f1_MCI": 0.47346938775510206,
+        "f1_Dementia": 0.6471698113207547
+      },
+      "test_secondary": {
+        "n": 2647,
+        "macro_auroc": 0.7558403877930214,
+        "macro_f1": 0.5927696693926676,
+        "balanced_accuracy": 0.5900278048487148,
+        "pn_bacc_uniform": 0.5884067414252477,
+        "pn_bacc_prior": 0.5882978747272757,
+        "f1_CN": 0.6401062416998672,
+        "f1_MCI": 0.5078608861362554,
+        "f1_Dementia": 0.6303418803418803
+      },
+      "mask_sensitivity": 0.09994361670061583,
+      "red_flags": {
+        "best_epoch_below_5": false,
+        "val_test_gap_above_0.05": false,
+        "nan_loss": false
+      }
+    }
+  },
+  "baselines": {
+    "B1": {
+      "n": 2647,
+      "macro_auroc": 0.7990873022865941,
+      "macro_f1": 0.6310523469382483,
+      "balanced_accuracy": 0.6247130763280097,
+      "pn_bacc_uniform": 0.585104920942304,
+      "pn_bacc_prior": 0.5853161796390522,
+      "f1_CN": 0.6716487622606259,
+      "f1_MCI": 0.5784975258659469,
+      "f1_Dementia": 0.6430107526881721
+    },
+    "B1-blind": {
+      "n": 2647,
+      "macro_auroc": 0.7413212476902222,
+      "macro_f1": 0.5750717655884231,
+      "balanced_accuracy": 0.568688288084581,
+      "pn_bacc_uniform": 0.5552442887317112,
+      "pn_bacc_prior": 0.5551276094256656,
+      "f1_CN": 0.6286223807400803,
+      "f1_MCI": 0.5153774464119292,
+      "f1_Dementia": 0.5812154696132596
+    }
+  }
+}
