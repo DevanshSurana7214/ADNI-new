@@ -1,0 +1,21 @@
+[S2] train=8716 val=959 test=3565
+[ok 1] A0 s0 ep=17 best= 1 valF1=0.6212 14.0s
+[ok 2] A0 s1 ep=19 best= 3 valF1=0.6124 13.9s
+[ok 3] A0 s2 ep=25 best= 9 valF1=0.6325 18.5s
+[ok 4] A1 s0 ep=17 best= 1 valF1=0.6024 12.7s
+[ok 5] A1 s1 ep=20 best= 4 valF1=0.5908 15.0s
+[ok 6] A1 s2 ep=23 best= 7 valF1=0.6127 17.6s
+[ok 7] A2 s0 ep=18 best= 2 valF1=0.6193 14.3s
+[ok 8] A2 s1 ep=20 best= 4 valF1=0.6144 15.7s
+[ok 9] A2 s2 ep=25 best= 9 valF1=0.6257 19.6s
+[ok 10] A3 s0 ep=23 best= 7 valF1=0.5964 18.3s
+[ok 11] A3 s1 ep=33 best=17 valF1=0.5821 25.8s
+[ok 12] A3 s2 ep=23 best= 7 valF1=0.6170 18.3s
+[ok 13] A4 s0 ep=23 best= 7 valF1=0.5958 17.8s
+[ok 14] A4 s1 ep=20 best= 4 valF1=0.5850 14.7s
+[ok 15] A4 s2 ep=23 best= 7 valF1=0.6101 16.9s
+[ok 16] B1 s0 ep= 0 best=-1 valF1=nan 0.0s
+[ok 17] B1 s1 ep= 0 best=-1 valF1=nan 0.0s
+[ok 18] B1 s2 ep= 0 best=-1 valF1=nan 0.0s
+[combined] oof_all.parquet rows=160425 runs=18
+[finished] ran=18 skipped=0 failed=0

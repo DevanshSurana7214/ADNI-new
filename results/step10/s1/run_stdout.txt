@@ -1,0 +1,77 @@
+[skip] A0 s0 f0 (already done)
+[ok 2/75] A0 s0 f1 ep=17 best= 1/ 1 valF1=0.6515 valPN=0.6210 19.5s nan=False
+[ok 3/75] A0 s0 f2 ep=22 best= 6/ 6 valF1=0.6007 valPN=0.5969 24.6s nan=False
+[ok 4/75] A0 s0 f3 ep=19 best= 3/ 3 valF1=0.6537 valPN=0.6381 21.2s nan=False
+[ok 5/75] A0 s0 f4 ep=17 best= 1/ 1 valF1=0.6506 valPN=0.6446 19.5s nan=False
+[ok 6/75] A0 s1 f0 ep=16 best= 0/ 2 valF1=0.6184 valPN=0.5904 18.2s nan=False
+[ok 7/75] A0 s1 f1 ep=28 best=12/17 valF1=0.6236 valPN=0.6130 31.9s nan=False
+[ok 8/75] A0 s1 f2 ep=25 best= 9/ 9 valF1=0.6443 valPN=0.6500 28.2s nan=False
+[ok 9/75] A0 s1 f3 ep=23 best= 7/ 6 valF1=0.6398 valPN=0.6569 26.2s nan=False
+[ok 10/75] A0 s1 f4 ep=17 best= 1/ 1 valF1=0.6534 valPN=0.6246 18.9s nan=False
+[ok 11/75] A0 s2 f0 ep=21 best= 5/ 5 valF1=0.6116 valPN=0.6048 23.8s nan=False
+[ok 12/75] A0 s2 f1 ep=19 best= 3/ 8 valF1=0.6111 valPN=0.5985 21.7s nan=False
+[ok 13/75] A0 s2 f2 ep=18 best= 2/13 valF1=0.6158 valPN=0.6058 20.1s nan=False
+[ok 14/75] A0 s2 f3 ep=19 best= 3/ 3 valF1=0.6029 valPN=0.6023 21.4s nan=False
+[ok 15/75] A0 s2 f4 ep=18 best= 2/10 valF1=0.5991 valPN=0.5941 20.2s nan=False
+[ok 16/75] A1 s0 f0 ep=20 best= 4/ 4 valF1=0.6419 valPN=0.6829 22.5s nan=False
+[ok 17/75] A1 s0 f1 ep=21 best= 5/ 3 valF1=0.6379 valPN=0.6229 23.7s nan=False
+[ok 18/75] A1 s0 f2 ep=23 best= 7/ 3 valF1=0.5990 valPN=0.6070 25.7s nan=False
+[ok 19/75] A1 s0 f3 ep=20 best= 4/ 4 valF1=0.6329 valPN=0.6491 22.8s nan=False
+[ok 20/75] A1 s0 f4 ep=26 best=10/ 0 valF1=0.5969 valPN=0.6221 29.2s nan=False
+[ok 21/75] A1 s1 f0 ep=16 best= 0/ 3 valF1=0.5840 valPN=0.6063 17.7s nan=False
+[ok 22/75] A1 s1 f1 ep=39 best=23/23 valF1=0.6236 valPN=0.6210 43.6s nan=False
+[ok 23/75] A1 s1 f2 ep=24 best= 8/ 8 valF1=0.6241 valPN=0.6526 26.9s nan=False
+[ok 24/75] A1 s1 f3 ep=28 best=12/ 2 valF1=0.6122 valPN=0.6630 30.7s nan=False
+[ok 25/75] A1 s1 f4 ep=22 best= 6/ 4 valF1=0.6413 valPN=0.6464 24.7s nan=False
+[ok 26/75] A1 s2 f0 ep=26 best=10/ 9 valF1=0.5907 valPN=0.6132 29.1s nan=False
+[ok 27/75] A1 s2 f1 ep=20 best= 4/ 1 valF1=0.5807 valPN=0.5943 22.7s nan=False
+[ok 28/75] A1 s2 f2 ep=51 best=35/13 valF1=0.6049 valPN=0.6047 44.6s nan=False
+[ok 29/75] A1 s2 f3 ep=17 best= 1/ 1 valF1=0.5716 valPN=0.6061 14.2s nan=False
+[ok 30/75] A1 s2 f4 ep=27 best=11/ 0 valF1=0.5885 valPN=0.6117 22.5s nan=False
+[ok 31/75] A4 s0 f0 ep=28 best=12/ 5 valF1=0.6325 valPN=0.6843 24.8s nan=False
+[ok 32/75] A4 s0 f1 ep=18 best= 2/ 1 valF1=0.6284 valPN=0.6598 16.8s nan=False
+[ok 33/75] A4 s0 f2 ep=19 best= 3/ 3 valF1=0.5817 valPN=0.6150 17.8s nan=False
+[ok 34/75] A4 s0 f3 ep=21 best= 5/ 4 valF1=0.6101 valPN=0.6413 19.4s nan=False
+[ok 35/75] A4 s0 f4 ep=20 best= 4/ 0 valF1=0.5813 valPN=0.6342 17.3s nan=False
+[ok 36/75] A4 s1 f0 ep=17 best= 1/ 0 valF1=0.5760 valPN=0.6224 14.9s nan=False
+[ok 37/75] A4 s1 f1 ep=36 best=20/ 7 valF1=0.6022 valPN=0.6309 31.6s nan=False
+[ok 38/75] A4 s1 f2 ep=39 best=23/10 valF1=0.6127 valPN=0.6574 35.6s nan=False
+[ok 39/75] A4 s1 f3 ep=21 best= 5/ 5 valF1=0.6215 valPN=0.6852 19.2s nan=False
+[ok 40/75] A4 s1 f4 ep=16 best= 0/ 0 valF1=0.6403 valPN=0.6785 14.0s nan=False
+[ok 41/75] A4 s2 f0 ep=30 best=14/ 9 valF1=0.5765 valPN=0.6104 27.5s nan=False
+[ok 42/75] A4 s2 f1 ep=26 best=10/ 6 valF1=0.5788 valPN=0.6104 23.8s nan=False
+[ok 43/75] A4 s2 f2 ep=29 best=13/13 valF1=0.5967 valPN=0.6204 26.2s nan=False
+[ok 44/75] A4 s2 f3 ep=26 best=10/ 5 valF1=0.5624 valPN=0.6181 23.6s nan=False
+[ok 45/75] A4 s2 f4 ep=27 best=11/ 0 valF1=0.5852 valPN=0.6256 24.5s nan=False
+[skip] C1 s0 f0 (already done)
+[ok 47/75] C1 s0 f1 ep=20 best= 4/ 2 valF1=0.6322 valPN=0.6399 16.8s nan=False
+[ok 48/75] C1 s0 f2 ep=31 best=15/ 2 valF1=0.5908 valPN=0.6062 26.0s nan=False
+[ok 49/75] C1 s0 f3 ep=20 best= 4/ 4 valF1=0.6297 valPN=0.6535 16.9s nan=False
+[ok 50/75] C1 s0 f4 ep=33 best=17/ 0 valF1=0.5917 valPN=0.6181 26.2s nan=False
+[ok 51/75] C1 s1 f0 ep=16 best= 0/ 0 valF1=0.5818 valPN=0.6034 12.5s nan=False
+[ok 52/75] C1 s1 f1 ep=49 best=33/31 valF1=0.6067 valPN=0.6261 38.9s nan=False
+[ok 53/75] C1 s1 f2 ep=25 best= 9/ 9 valF1=0.6188 valPN=0.6511 20.1s nan=False
+[ok 54/75] C1 s1 f3 ep=26 best=10/ 5 valF1=0.6180 valPN=0.6725 20.5s nan=False
+[ok 55/75] C1 s1 f4 ep=21 best= 5/ 4 valF1=0.6444 valPN=0.6519 16.8s nan=False
+[ok 56/75] C1 s2 f0 ep=24 best= 8/ 9 valF1=0.5841 valPN=0.6163 19.2s nan=False
+[ok 57/75] C1 s2 f1 ep=54 best=38/ 6 valF1=0.5854 valPN=0.6046 44.1s nan=False
+[ok 58/75] C1 s2 f2 ep=29 best=13/13 valF1=0.5974 valPN=0.6121 24.3s nan=False
+[ok 59/75] C1 s2 f3 ep=17 best= 1/ 3 valF1=0.5632 valPN=0.6045 14.2s nan=False
+[ok 60/75] C1 s2 f4 ep=27 best=11/ 0 valF1=0.5845 valPN=0.6138 24.6s nan=False
+[skip] Cshuf s0 f0 (already done)
+[ok 62/75] Cshuf s0 f1 ep=19 best= 3/ 3 valF1=0.6378 valPN=0.6157 17.2s nan=False
+[ok 63/75] Cshuf s0 f2 ep=24 best= 8/ 1 valF1=0.6100 valPN=0.5941 22.2s nan=False
+[ok 64/75] Cshuf s0 f3 ep=19 best= 3/ 3 valF1=0.6595 valPN=0.6422 17.6s nan=False
+[ok 65/75] Cshuf s0 f4 ep=18 best= 2/ 0 valF1=0.6433 valPN=0.6211 16.8s nan=False
+[ok 66/75] Cshuf s1 f0 ep=17 best= 1/ 1 valF1=0.6237 valPN=0.6039 15.9s nan=False
+[ok 67/75] Cshuf s1 f1 ep=18 best= 2/11 valF1=0.6233 valPN=0.6032 16.9s nan=False
+[ok 68/75] Cshuf s1 f2 ep=17 best= 1/ 1 valF1=0.6445 valPN=0.6418 14.9s nan=False
+[ok 69/75] Cshuf s1 f3 ep=21 best= 5/12 valF1=0.6513 valPN=0.6527 18.6s nan=False
+[ok 70/75] Cshuf s1 f4 ep=17 best= 1/ 7 valF1=0.6508 valPN=0.6265 15.1s nan=False
+[ok 71/75] Cshuf s2 f0 ep=20 best= 4/ 4 valF1=0.6155 valPN=0.6096 17.7s nan=False
+[ok 72/75] Cshuf s2 f1 ep=22 best= 6/ 6 valF1=0.6054 valPN=0.5971 19.8s nan=False
+[ok 73/75] Cshuf s2 f2 ep=20 best= 4/ 4 valF1=0.6309 valPN=0.6331 17.8s nan=False
+[ok 74/75] Cshuf s2 f3 ep=28 best=12/10 valF1=0.6062 valPN=0.6019 24.9s nan=False
+[ok 75/75] Cshuf s2 f4 ep=16 best= 0/ 2 valF1=0.6071 valPN=0.6092 13.9s nan=False
+[combined] oof_all.parquet rows=635520 runs=75
+[finished] ran=72 skipped=3 failed=0 (log: C:\D\5th Sem\ADNI NEW\adni-shortcut\results\step10\s1\run_log.jsonl)

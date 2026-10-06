@@ -111,10 +111,13 @@ class Trainer:
         cfg: TrainConfig,
         priors: Priors | None = None,
         val_weights: np.ndarray | None = None,
+        shuffle_a3: bool = False,
     ) -> None:
         self.model = model
         self.cfg = cfg
         self.priors = priors
+        # Step 10 control C-shuf: shuffle the A3 per-episode weights within each batch.
+        self.shuffle_a3 = bool(shuffle_a3)
         # Fixed per-episode PN weights for the VALIDATION split (rho uniform, from the fold's
         # TRAIN-split pi_hat). They do not depend on the epoch, so they are computed once outside.
         self.val_weights = None if val_weights is None else np.asarray(val_weights, dtype=float)
@@ -168,7 +171,8 @@ class Trainer:
                 opt.zero_grad(set_to_none=True)
                 logits, _, eff = self.model(batch.feats, batch.mask, apply_modality_dropout=True)
                 patterns = mask_to_pattern(eff)
-                loss = arm_loss(cfg.arm, logits, batch.y, patterns, self.priors, cfg.tau)
+                loss = arm_loss(cfg.arm, logits, batch.y, patterns, self.priors, cfg.tau,
+                                shuffle_a3=self.shuffle_a3)
                 loss.backward()
                 opt.step()
                 epoch_loss += float(loss.item()) * len(idx)
@@ -211,6 +215,7 @@ def train_arm(
     model_cfg_kwargs: dict | None = None,
     priors: Priors | None = None,
     val_weights: np.ndarray | None = None,
+    shuffle_a3: bool = False,
 ) -> tuple[FusionModel, dict, float]:
     """Fit loss arm *arm* on one fold. Returns (model, result_dict, wall_clock_seconds).
 
@@ -218,7 +223,8 @@ def train_arm(
     constructing the model so that weight initialisation is reproducible, and ``Trainer.fit``
     re-seeds again so the dropout/permutation stream is independent of the init draw. A fold is
     therefore fully deterministic for a given ``cfg.seed``. ``val_weights`` (optional) are the
-    fixed validation PN weights for the SECONDARY checkpoint rule.
+    fixed validation PN weights for the SECONDARY checkpoint rule. ``shuffle_a3`` (optional) turns
+    on the Step 10 C-shuf control for arm A3 only.
     """
     from dataclasses import replace
 
@@ -227,7 +233,7 @@ def train_arm(
     cfg = replace(cfg, arm=arm)
     set_seed(cfg.seed, cfg.deterministic)
     model = FusionModel(ModelConfig(feat_dims=feat_dims, **(model_cfg_kwargs or {})))
-    trainer = Trainer(model, cfg, priors, val_weights)
+    trainer = Trainer(model, cfg, priors, val_weights, shuffle_a3)
     t0 = time.time()
     result = trainer.fit(train, val)
     result["seconds"] = time.time() - t0

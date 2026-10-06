@@ -1,0 +1,418 @@
+{
+  "n_bootstrap": 2000,
+  "uniform_protocol": "seed-averaged, pooled OOF, one 2000-resample subject-cluster bootstrap (Step 6b)",
+  "verification": {
+    "rows": [
+      {
+        "arm": "A0",
+        "ckpt_rule": "primary",
+        "n_rows": 39720,
+        "max_prob_deviation": 0.0
+      },
+      {
+        "arm": "A0",
+        "ckpt_rule": "secondary",
+        "n_rows": 39720,
+        "max_prob_deviation": 0.0
+      },
+      {
+        "arm": "A1",
+        "ckpt_rule": "primary",
+        "n_rows": 79440,
+        "max_prob_deviation": 0.0
+      },
+      {
+        "arm": "A1",
+        "ckpt_rule": "secondary",
+        "n_rows": 79440,
+        "max_prob_deviation": 0.0
+      },
+      {
+        "arm": "A4",
+        "ckpt_rule": "primary",
+        "n_rows": 79440,
+        "max_prob_deviation": 0.0
+      },
+      {
+        "arm": "A4",
+        "ckpt_rule": "secondary",
+        "n_rows": 79440,
+        "max_prob_deviation": 0.0
+      }
+    ],
+    "max_prob_deviation": 0.0
+  },
+  "controls": {
+    "primary": {
+      "joint_prior_supported": false,
+      "a4_minus_c1_pn_bacc": {
+        "comparison": "A4 - C1",
+        "metric": "pn_bacc_uniform",
+        "diff": 0.0074930785399026645,
+        "ci_low": -0.0005367551474098981,
+        "ci_high": 0.01522808499281443,
+        "p": 0.06996501749125437
+      }
+    },
+    "secondary": {
+      "joint_prior_supported": true,
+      "a4_minus_c1_pn_bacc": {
+        "comparison": "A4 - C1",
+        "metric": "pn_bacc_uniform",
+        "diff": 0.011524653397332774,
+        "ci_low": 0.005307305624648662,
+        "ci_high": 0.01820285459790122,
+        "p": 0.0009995002498750624
+      }
+    }
+  },
+  "s2": {
+    "primary": [
+      {
+        "comparison": "A4 - A0",
+        "metric": "pn_bacc_uniform",
+        "diff": -0.007395126775846306,
+        "ci_low": -0.027818809027113575,
+        "ci_high": 0.012606133239273646,
+        "p": 0.49375312343828087
+      },
+      {
+        "comparison": "A4 - A0",
+        "metric": "macro_f1",
+        "diff": -0.05048046647589166,
+        "ci_low": -0.07065695392577279,
+        "ci_high": -0.03025124142374342,
+        "p": 0.0009995002498750624
+      },
+      {
+        "comparison": "A4 - A0",
+        "metric": "macro_auroc",
+        "diff": -0.051918819071038125,
+        "ci_low": -0.0626038937896792,
+        "ci_high": -0.04150844285489785,
+        "p": 0.0009995002498750624
+      },
+      {
+        "comparison": "A4 - A1",
+        "metric": "pn_bacc_uniform",
+        "diff": -0.016395752641787054,
+        "ci_low": -0.03283904131404289,
+        "ci_high": -0.000982227571870191,
+        "p": 0.035982008995502246
+      },
+      {
+        "comparison": "A4 - A1",
+        "metric": "macro_f1",
+        "diff": -0.032433824278749634,
+        "ci_low": -0.04913936728991569,
+        "ci_high": -0.01653727186051936,
+        "p": 0.0009995002498750624
+      },
+      {
+        "comparison": "A4 - A1",
+        "metric": "macro_auroc",
+        "diff": -0.042002324390339574,
+        "ci_low": -0.05063855547243665,
+        "ci_high": -0.0339181028319531,
+        "p": 0.0009995002498750624
+      }
+    ],
+    "secondary": [
+      {
+        "comparison": "A4 - A0",
+        "metric": "pn_bacc_uniform",
+        "diff": 0.0261163215191218,
+        "ci_low": 0.002532066509479236,
+        "ci_high": 0.049432156178259606,
+        "p": 0.026986506746626688
+      },
+      {
+        "comparison": "A4 - A0",
+        "metric": "macro_f1",
+        "diff": -0.03412916627083129,
+        "ci_low": -0.05723448443810237,
+        "ci_high": -0.011074295097310415,
+        "p": 0.005997001499250375
+      },
+      {
+        "comparison": "A4 - A0",
+        "metric": "macro_auroc",
+        "diff": -0.03321717823422787,
+        "ci_low": -0.04345437729161004,
+        "ci_high": -0.022914881291583217,
+        "p": 0.0009995002498750624
+      },
+      {
+        "comparison": "A4 - A1",
+        "metric": "pn_bacc_uniform",
+        "diff": 0.013478096172158227,
+        "ci_low": -0.0036387307523703337,
+        "ci_high": 0.030773783280432183,
+        "p": 0.12993503248375812
+      },
+      {
+        "comparison": "A4 - A1",
+        "metric": "macro_f1",
+        "diff": -0.004081495780615008,
+        "ci_low": -0.02101361110224572,
+        "ci_high": 0.011981472440613343,
+        "p": 0.6146926536731634
+      },
+      {
+        "comparison": "A4 - A1",
+        "metric": "macro_auroc",
+        "diff": -0.027141385528939632,
+        "ci_low": -0.034230941789182456,
+        "ci_high": -0.02005994406849054,
+        "p": 0.0009995002498750624
+      }
+    ]
+  },
+  "best_epochs": [
+    {
+      "source": "S1",
+      "arm": "A0",
+      "ckpt_rule": "primary",
+      "n_runs": 15,
+      "median": 3.0,
+      "mean": 4.0,
+      "min": 0,
+      "max": 12,
+      "n_eq_0": 1,
+      "flag_epoch_0": true
+    },
+    {
+      "source": "S1",
+      "arm": "A1",
+      "ckpt_rule": "primary",
+      "n_runs": 15,
+      "median": 7.0,
+      "mean": 9.333333333333334,
+      "min": 0,
+      "max": 35,
+      "n_eq_0": 1,
+      "flag_epoch_0": true
+    },
+    {
+      "source": "S1",
+      "arm": "A4",
+      "ckpt_rule": "primary",
+      "n_runs": 15,
+      "median": 10.0,
+      "mean": 8.866666666666667,
+      "min": 0,
+      "max": 23,
+      "n_eq_0": 1,
+      "flag_epoch_0": true
+    },
+    {
+      "source": "S1",
+      "arm": "C1",
+      "ckpt_rule": "primary",
+      "n_runs": 15,
+      "median": 9.0,
+      "mean": 11.466666666666667,
+      "min": 0,
+      "max": 38,
+      "n_eq_0": 1,
+      "flag_epoch_0": true
+    },
+    {
+      "source": "S1",
+      "arm": "Cshuf",
+      "ckpt_rule": "primary",
+      "n_runs": 15,
+      "median": 3.0,
+      "mean": 3.6666666666666665,
+      "min": 0,
+      "max": 12,
+      "n_eq_0": 1,
+      "flag_epoch_0": true
+    },
+    {
+      "source": "S2",
+      "arm": "A0",
+      "ckpt_rule": "primary",
+      "n_runs": 3,
+      "median": 3.0,
+      "mean": 4.333333333333333,
+      "min": 1,
+      "max": 9,
+      "n_eq_0": 0,
+      "flag_epoch_0": false
+    },
+    {
+      "source": "S2",
+      "arm": "A1",
+      "ckpt_rule": "primary",
+      "n_runs": 3,
+      "median": 4.0,
+      "mean": 4.0,
+      "min": 1,
+      "max": 7,
+      "n_eq_0": 0,
+      "flag_epoch_0": false
+    },
+    {
+      "source": "S2",
+      "arm": "A2",
+      "ckpt_rule": "primary",
+      "n_runs": 3,
+      "median": 4.0,
+      "mean": 5.0,
+      "min": 2,
+      "max": 9,
+      "n_eq_0": 0,
+      "flag_epoch_0": false
+    },
+    {
+      "source": "S2",
+      "arm": "A3",
+      "ckpt_rule": "primary",
+      "n_runs": 3,
+      "median": 7.0,
+      "mean": 10.333333333333334,
+      "min": 7,
+      "max": 17,
+      "n_eq_0": 0,
+      "flag_epoch_0": false
+    },
+    {
+      "source": "S2",
+      "arm": "A4",
+      "ckpt_rule": "primary",
+      "n_runs": 3,
+      "median": 7.0,
+      "mean": 6.0,
+      "min": 4,
+      "max": 7,
+      "n_eq_0": 0,
+      "flag_epoch_0": false
+    },
+    {
+      "source": "S1",
+      "arm": "A0",
+      "ckpt_rule": "secondary",
+      "n_runs": 15,
+      "median": 5.0,
+      "mean": 6.0,
+      "min": 1,
+      "max": 17,
+      "n_eq_0": 0,
+      "flag_epoch_0": false
+    },
+    {
+      "source": "S1",
+      "arm": "A1",
+      "ckpt_rule": "secondary",
+      "n_runs": 15,
+      "median": 3.0,
+      "mean": 5.2,
+      "min": 0,
+      "max": 23,
+      "n_eq_0": 2,
+      "flag_epoch_0": true
+    },
+    {
+      "source": "S1",
+      "arm": "A4",
+      "ckpt_rule": "secondary",
+      "n_runs": 15,
+      "median": 5.0,
+      "mean": 4.533333333333333,
+      "min": 0,
+      "max": 13,
+      "n_eq_0": 4,
+      "flag_epoch_0": true
+    },
+    {
+      "source": "S1",
+      "arm": "C1",
+      "ckpt_rule": "secondary",
+      "n_runs": 15,
+      "median": 4.0,
+      "mean": 6.133333333333334,
+      "min": 0,
+      "max": 31,
+      "n_eq_0": 3,
+      "flag_epoch_0": true
+    },
+    {
+      "source": "S1",
+      "arm": "Cshuf",
+      "ckpt_rule": "secondary",
+      "n_runs": 15,
+      "median": 4.0,
+      "mean": 4.733333333333333,
+      "min": 0,
+      "max": 12,
+      "n_eq_0": 1,
+      "flag_epoch_0": true
+    },
+    {
+      "source": "S2",
+      "arm": "A0",
+      "ckpt_rule": "secondary",
+      "n_runs": 3,
+      "median": 3.0,
+      "mean": 4.0,
+      "min": 1,
+      "max": 8,
+      "n_eq_0": 0,
+      "flag_epoch_0": false
+    },
+    {
+      "source": "S2",
+      "arm": "A1",
+      "ckpt_rule": "secondary",
+      "n_runs": 3,
+      "median": 3.0,
+      "mean": 2.6666666666666665,
+      "min": 1,
+      "max": 4,
+      "n_eq_0": 0,
+      "flag_epoch_0": false
+    },
+    {
+      "source": "S2",
+      "arm": "A2",
+      "ckpt_rule": "secondary",
+      "n_runs": 3,
+      "median": 3.0,
+      "mean": 4.333333333333333,
+      "min": 2,
+      "max": 8,
+      "n_eq_0": 0,
+      "flag_epoch_0": false
+    },
+    {
+      "source": "S2",
+      "arm": "A3",
+      "ckpt_rule": "secondary",
+      "n_runs": 3,
+      "median": 3.0,
+      "mean": 2.6666666666666665,
+      "min": 1,
+      "max": 4,
+      "n_eq_0": 0,
+      "flag_epoch_0": false
+    },
+    {
+      "source": "S2",
+      "arm": "A4",
+      "ckpt_rule": "secondary",
+      "n_runs": 3,
+      "median": 1.0,
+      "mean": 2.0,
+      "min": 1,
+      "max": 4,
+      "n_eq_0": 0,
+      "flag_epoch_0": false
+    }
+  ],
+  "intervention_files": [
+    "intervention_primary.csv",
+    "intervention_raw.csv",
+    "intervention_secondary.csv"
+  ]
+}

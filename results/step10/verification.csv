@@ -1,0 +1,7 @@
+arm,ckpt_rule,n_rows,max_prob_deviation
+A0,primary,39720,0.0
+A0,secondary,39720,0.0
+A1,primary,79440,0.0
+A1,secondary,79440,0.0
+A4,primary,79440,0.0
+A4,secondary,79440,0.0

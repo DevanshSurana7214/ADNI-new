@@ -128,6 +128,11 @@ def joint_weights(patterns, y: torch.Tensor, priors: Priors, rho=None, device=No
     return w / w.mean()
 
 
+def shuffle_weights(w: torch.Tensor, generator: torch.Generator | None = None) -> torch.Tensor:
+    """Randomly permute a per-row weight vector (C-shuf). Exposed so the permutation is testable."""
+    return w[torch.randperm(w.shape[0], device=w.device, generator=generator)]
+
+
 def arm_loss(
     arm: str,
     logits: torch.Tensor,
@@ -135,8 +140,14 @@ def arm_loss(
     patterns,
     priors: Priors | None,
     tau: float = 1.0,
+    shuffle_a3: bool = False,
 ) -> torch.Tensor:
-    """Training loss for one batch under *arm*; *patterns* is the effective mask per row (strings)."""
+    """Training loss for one batch under *arm*; *patterns* is the effective mask per row (strings).
+
+    ``shuffle_a3=True`` is the Step 10 control C-shuf: for A3 the per-episode weights are randomly
+    permuted across the rows of the batch (a fresh permutation every batch, i.e. within every
+    epoch), so a weight is no longer tied to the episode's own (c, m_tilde). Only A3 is affected.
+    """
     if arm == "A0":
         return F.cross_entropy(logits, y)
     if priors is None:
@@ -149,6 +160,8 @@ def arm_loss(
         return (w * F.cross_entropy(logits, y, reduction="none")).mean()
     if arm == "A3":
         w = joint_weights(patterns, y, priors, device=logits.device)
+        if shuffle_a3:
+            w = shuffle_weights(w)
         return (w * F.cross_entropy(logits, y, reduction="none")).mean()
     if arm == "A4":
         return F.cross_entropy(adjusted_logits(logits, patterns, priors, tau), y)
