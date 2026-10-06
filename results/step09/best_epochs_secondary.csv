@@ -1,0 +1,6 @@
+rule,arm,n_runs,median,mean,min,max,n_below_5,flag_median_below_5
+secondary,A0,15,5.0,6.0,1,17,6,False
+secondary,A1,15,3.0,5.2,0,23,11,True
+secondary,A2,15,3.0,4.6,1,16,8,True
+secondary,A3,15,4.0,3.8666666666666667,0,15,9,True
+secondary,A4,15,5.0,4.533333333333333,0,13,7,False

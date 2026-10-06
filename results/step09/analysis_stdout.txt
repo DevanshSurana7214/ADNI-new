@@ -1,0 +1,12 @@
+[data] oof rows=556080, arms=['A0', 'A1', 'A2', 'A3', 'A4'], runs=75
+[main] wrote main_table_primary.csv
+[main] wrote main_table_secondary.csv
+[paired primary] negative result
+[paired secondary] negative result
+[breakdown] wrote breakdown_primary.csv
+[breakdown] wrote breakdown_secondary.csv
+
+=== VERDICTS ===
+primary: negative result
+secondary: negative result
+[wrote analysis under C:\D\5th Sem\ADNI NEW\adni-shortcut\results\step09]

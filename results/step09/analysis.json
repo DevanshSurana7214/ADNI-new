@@ -1,0 +1,395 @@
+{
+  "n_bootstrap": 2000,
+  "boot_seed": 0,
+  "ni_margin": 0.02,
+  "uniform_protocol": "seed-averaged probabilities and weights per episode, pooled OOF, one subject-cluster bootstrap per arm (Step 6b)",
+  "verdicts": {
+    "primary": {
+      "wins_pn_bacc_holm": false,
+      "macro_f1_non_inferior": false,
+      "verdict": "negative result",
+      "pn_bacc_diffs": {
+        "A4 - A0": 0.018108814783623695,
+        "A4 - A1": 0.006871512126768731,
+        "A4 - A2": 0.018890696016610198,
+        "A4 - A3": 0.00203977136871758
+      },
+      "pn_bacc_holm_p": {
+        "A4 - A0": 0.005997001499250375,
+        "A4 - A1": 0.16391804097951024,
+        "A4 - A2": 0.00399800099950025,
+        "A4 - A3": 0.5657171414292853
+      },
+      "macro_f1_ci_low": {
+        "A4 - A0": -0.03276970760780376,
+        "A4 - A1": -0.018886901931260216,
+        "A4 - A2": -0.034814064687574094,
+        "A4 - A3": -0.010135883911533156
+      }
+    },
+    "secondary": {
+      "wins_pn_bacc_holm": false,
+      "macro_f1_non_inferior": false,
+      "verdict": "negative result",
+      "pn_bacc_diffs": {
+        "A4 - A0": 0.02248785956847854,
+        "A4 - A1": 0.008748036813494897,
+        "A4 - A2": 0.017611944003924407,
+        "A4 - A3": 0.0024985507165423693
+      },
+      "pn_bacc_holm_p": {
+        "A4 - A0": 0.00399800099950025,
+        "A4 - A1": 0.0399800099950025,
+        "A4 - A2": 0.005997001499250375,
+        "A4 - A3": 0.3798100949525237
+      },
+      "macro_f1_ci_low": {
+        "A4 - A0": -0.04720085388607348,
+        "A4 - A1": -0.02070853662410855,
+        "A4 - A2": -0.050610614987205885,
+        "A4 - A3": -0.007689878106616213
+      }
+    }
+  },
+  "primary_checkpoint_rule": "primary",
+  "best_epochs": {
+    "primary": [
+      {
+        "rule": "primary",
+        "arm": "A0",
+        "n_runs": 15,
+        "median": 3.0,
+        "mean": 4.0,
+        "min": 0,
+        "max": 12,
+        "n_below_5": 9,
+        "flag_median_below_5": true
+      },
+      {
+        "rule": "primary",
+        "arm": "A1",
+        "n_runs": 15,
+        "median": 7.0,
+        "mean": 9.333333333333334,
+        "min": 0,
+        "max": 35,
+        "n_below_5": 5,
+        "flag_median_below_5": false
+      },
+      {
+        "rule": "primary",
+        "arm": "A2",
+        "n_runs": 15,
+        "median": 3.0,
+        "mean": 3.8666666666666667,
+        "min": 0,
+        "max": 16,
+        "n_below_5": 10,
+        "flag_median_below_5": true
+      },
+      {
+        "rule": "primary",
+        "arm": "A3",
+        "n_runs": 15,
+        "median": 10.0,
+        "mean": 12.933333333333334,
+        "min": 0,
+        "max": 56,
+        "n_below_5": 3,
+        "flag_median_below_5": false
+      },
+      {
+        "rule": "primary",
+        "arm": "A4",
+        "n_runs": 15,
+        "median": 10.0,
+        "mean": 8.866666666666667,
+        "min": 0,
+        "max": 23,
+        "n_below_5": 5,
+        "flag_median_below_5": false
+      }
+    ],
+    "secondary": [
+      {
+        "rule": "secondary",
+        "arm": "A0",
+        "n_runs": 15,
+        "median": 5.0,
+        "mean": 6.0,
+        "min": 1,
+        "max": 17,
+        "n_below_5": 6,
+        "flag_median_below_5": false
+      },
+      {
+        "rule": "secondary",
+        "arm": "A1",
+        "n_runs": 15,
+        "median": 3.0,
+        "mean": 5.2,
+        "min": 0,
+        "max": 23,
+        "n_below_5": 11,
+        "flag_median_below_5": true
+      },
+      {
+        "rule": "secondary",
+        "arm": "A2",
+        "n_runs": 15,
+        "median": 3.0,
+        "mean": 4.6,
+        "min": 1,
+        "max": 16,
+        "n_below_5": 8,
+        "flag_median_below_5": true
+      },
+      {
+        "rule": "secondary",
+        "arm": "A3",
+        "n_runs": 15,
+        "median": 4.0,
+        "mean": 3.8666666666666667,
+        "min": 0,
+        "max": 15,
+        "n_below_5": 9,
+        "flag_median_below_5": true
+      },
+      {
+        "rule": "secondary",
+        "arm": "A4",
+        "n_runs": 15,
+        "median": 5.0,
+        "mean": 4.533333333333333,
+        "min": 0,
+        "max": 13,
+        "n_below_5": 7,
+        "flag_median_below_5": false
+      }
+    ]
+  },
+  "stability_per_seed": {
+    "primary": [
+      {
+        "rule": "primary",
+        "arm": "A0",
+        "macro_auroc_mean": 0.7820707439567479,
+        "macro_auroc_sd": 0.005667273757158948,
+        "macro_f1_mean": 0.6043917237112826,
+        "macro_f1_sd": 0.008705512803052365,
+        "pn_bacc_uniform_mean": 0.5882858225647095,
+        "pn_bacc_uniform_sd": 0.011652733576764367,
+        "balanced_accuracy_mean": 0.6103874445545503,
+        "balanced_accuracy_sd": 0.01206622427283347
+      },
+      {
+        "rule": "primary",
+        "arm": "A1 (uniform)",
+        "macro_auroc_mean": 0.7698532946070342,
+        "macro_auroc_sd": 0.006978499804914205,
+        "macro_f1_mean": 0.5889281623146356,
+        "macro_f1_sd": 0.007212371066410184,
+        "pn_bacc_uniform_mean": 0.5982994482785294,
+        "pn_bacc_uniform_sd": 0.00734374988904363,
+        "balanced_accuracy_mean": 0.6168886622084876,
+        "balanced_accuracy_sd": 0.0072305538058880636
+      },
+      {
+        "rule": "primary",
+        "arm": "A1 (P(c))",
+        "macro_auroc_mean": 0.7713560697659044,
+        "macro_auroc_sd": 0.007107633257933916,
+        "macro_f1_mean": 0.6013989036686144,
+        "macro_f1_sd": 0.0050017839705467845,
+        "pn_bacc_uniform_mean": 0.5834453438193662,
+        "pn_bacc_uniform_sd": 0.0037841751432259258,
+        "balanced_accuracy_mean": 0.6035998062581037,
+        "balanced_accuracy_sd": 0.004436686822195946
+      },
+      {
+        "rule": "primary",
+        "arm": "A2",
+        "macro_auroc_mean": 0.7815519014253812,
+        "macro_auroc_sd": 0.005760427990901091,
+        "macro_f1_mean": 0.6063488088635482,
+        "macro_f1_sd": 0.0077063388313382145,
+        "pn_bacc_uniform_mean": 0.5883655500390094,
+        "pn_bacc_uniform_sd": 0.009963693529341571,
+        "balanced_accuracy_mean": 0.6111875601993941,
+        "balanced_accuracy_sd": 0.009690568652586181
+      },
+      {
+        "rule": "primary",
+        "arm": "A3",
+        "macro_auroc_mean": 0.7545206162936449,
+        "macro_auroc_sd": 0.0038767644347326696,
+        "macro_f1_mean": 0.5785191925916717,
+        "macro_f1_sd": 0.007253936483198477,
+        "pn_bacc_uniform_mean": 0.6009074839955132,
+        "pn_bacc_uniform_sd": 0.004358233891543239,
+        "balanced_accuracy_mean": 0.6060039010745604,
+        "balanced_accuracy_sd": 0.004712129646871556
+      },
+      {
+        "rule": "primary",
+        "arm": "A4 (uniform)",
+        "macro_auroc_mean": 0.7585573954947673,
+        "macro_auroc_sd": 0.0074581092325085455,
+        "macro_f1_mean": 0.5776180908217429,
+        "macro_f1_sd": 0.005855834361727024,
+        "pn_bacc_uniform_mean": 0.6052582867643846,
+        "pn_bacc_uniform_sd": 0.006813637988598768,
+        "balanced_accuracy_mean": 0.61023403758831,
+        "balanced_accuracy_sd": 0.005809742443552123
+      },
+      {
+        "rule": "primary",
+        "arm": "A4 (P(c))",
+        "macro_auroc_mean": 0.760509657837814,
+        "macro_auroc_sd": 0.007163290941891936,
+        "macro_f1_mean": 0.5938115478335849,
+        "macro_f1_sd": 0.00377380671687836,
+        "pn_bacc_uniform_mean": 0.5948799135002152,
+        "pn_bacc_uniform_sd": 0.004332349377679737,
+        "balanced_accuracy_mean": 0.5993302561753686,
+        "balanced_accuracy_sd": 0.0034768514940068575
+      }
+    ],
+    "secondary": [
+      {
+        "rule": "secondary",
+        "arm": "A0",
+        "macro_auroc_mean": 0.7789186067557372,
+        "macro_auroc_sd": 0.006942764645267485,
+        "macro_f1_mean": 0.6030185784362242,
+        "macro_f1_sd": 0.009055971020733423,
+        "pn_bacc_uniform_mean": 0.5909467398024143,
+        "pn_bacc_uniform_sd": 0.009111314104997525,
+        "balanced_accuracy_mean": 0.6119542388225888,
+        "balanced_accuracy_sd": 0.010312958335941206
+      },
+      {
+        "rule": "secondary",
+        "arm": "A1 (uniform)",
+        "macro_auroc_mean": 0.7751962157298733,
+        "macro_auroc_sd": 0.005869626750879244,
+        "macro_f1_mean": 0.5807621527719254,
+        "macro_f1_sd": 0.009844922824290296,
+        "pn_bacc_uniform_mean": 0.604522886699037,
+        "pn_bacc_uniform_sd": 0.009159292453545355,
+        "balanced_accuracy_mean": 0.6234713961320925,
+        "balanced_accuracy_sd": 0.00854044610376478
+      },
+      {
+        "rule": "secondary",
+        "arm": "A1 (P(c))",
+        "macro_auroc_mean": 0.7780078212738251,
+        "macro_auroc_sd": 0.006197186263480615,
+        "macro_f1_mean": 0.604000615915217,
+        "macro_f1_sd": 0.007350404364445503,
+        "pn_bacc_uniform_mean": 0.5950888757206091,
+        "pn_bacc_uniform_sd": 0.006402343841090432,
+        "balanced_accuracy_mean": 0.6144717867177075,
+        "balanced_accuracy_sd": 0.006498998997549746
+      },
+      {
+        "rule": "secondary",
+        "arm": "A2",
+        "macro_auroc_mean": 0.7807297199387061,
+        "macro_auroc_sd": 0.0051066975527331755,
+        "macro_f1_mean": 0.6046921639144834,
+        "macro_f1_sd": 0.006681760018695284,
+        "pn_bacc_uniform_mean": 0.5927636011457146,
+        "pn_bacc_uniform_sd": 0.008291350432478339,
+        "balanced_accuracy_mean": 0.6138736491065085,
+        "balanced_accuracy_sd": 0.008236180958109442
+      },
+      {
+        "rule": "secondary",
+        "arm": "A3",
+        "macro_auroc_mean": 0.758808918602995,
+        "macro_auroc_sd": 0.003355131682934422,
+        "macro_f1_mean": 0.5663804339025446,
+        "macro_f1_sd": 0.00533722968169076,
+        "pn_bacc_uniform_mean": 0.6081312946672658,
+        "pn_bacc_uniform_sd": 0.008100331536622233,
+        "balanced_accuracy_mean": 0.6107495011414054,
+        "balanced_accuracy_sd": 0.005975423974762217
+      },
+      {
+        "rule": "secondary",
+        "arm": "A4 (uniform)",
+        "macro_auroc_mean": 0.7590609575004135,
+        "macro_auroc_sd": 0.005172871378402387,
+        "macro_f1_mean": 0.5655294786481603,
+        "macro_f1_sd": 0.00710844302087755,
+        "pn_bacc_uniform_mean": 0.6091479854609537,
+        "pn_bacc_uniform_sd": 0.010490021890158439,
+        "balanced_accuracy_mean": 0.6118567729655745,
+        "balanced_accuracy_sd": 0.008485402471261281
+      },
+      {
+        "rule": "secondary",
+        "arm": "A4 (P(c))",
+        "macro_auroc_mean": 0.762788332977805,
+        "macro_auroc_sd": 0.005438466517633281,
+        "macro_f1_mean": 0.5886927793581912,
+        "macro_f1_sd": 0.0064272425558166025,
+        "pn_bacc_uniform_mean": 0.599173470771222,
+        "pn_bacc_uniform_sd": 0.007810415255774813,
+        "balanced_accuracy_mean": 0.6017531665522529,
+        "balanced_accuracy_sd": 0.006504390487864423
+      }
+    ]
+  },
+  "runtime": [
+    {
+      "arm": "A0",
+      "runs": 15,
+      "seconds_total": 249.8752326965332,
+      "seconds_mean": 16.658348846435548,
+      "errors": 0,
+      "nan_loss_runs": 0
+    },
+    {
+      "arm": "A1",
+      "runs": 15,
+      "seconds_total": 330.5039517879486,
+      "seconds_mean": 22.033596785863242,
+      "errors": 0,
+      "nan_loss_runs": 0
+    },
+    {
+      "arm": "A2",
+      "runs": 15,
+      "seconds_total": 271.58877754211426,
+      "seconds_mean": 18.10591850280762,
+      "errors": 0,
+      "nan_loss_runs": 0
+    },
+    {
+      "arm": "A3",
+      "runs": 15,
+      "seconds_total": 499.7670052051544,
+      "seconds_mean": 33.3178003470103,
+      "errors": 0,
+      "nan_loss_runs": 0
+    },
+    {
+      "arm": "A4",
+      "runs": 15,
+      "seconds_total": 423.1254241466522,
+      "seconds_mean": 28.208361609776816,
+      "errors": 0,
+      "nan_loss_runs": 0
+    },
+    {
+      "arm": "TOTAL",
+      "runs": 75,
+      "seconds_total": 1774.8603913784027,
+      "seconds_mean": 23.664805218378703,
+      "errors": 0,
+      "nan_loss_runs": 0
+    }
+  ]
+}

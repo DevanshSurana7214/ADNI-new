@@ -26,6 +26,7 @@ import torch.nn as nn
 from sklearn.metrics import f1_score, roc_auc_score
 
 from .losses import Priors, arm_loss, mask_to_pattern
+from .metrics import pn_balanced_accuracy
 from .models import MODALITIES, FusionModel
 
 
@@ -104,10 +105,19 @@ def _macro_auroc(y: np.ndarray, proba: np.ndarray) -> float:
 class Trainer:
     """Shared trainer for arms A0-A4; only the loss (and its training-split priors) changes."""
 
-    def __init__(self, model: FusionModel, cfg: TrainConfig, priors: Priors | None = None) -> None:
+    def __init__(
+        self,
+        model: FusionModel,
+        cfg: TrainConfig,
+        priors: Priors | None = None,
+        val_weights: np.ndarray | None = None,
+    ) -> None:
         self.model = model
         self.cfg = cfg
         self.priors = priors
+        # Fixed per-episode PN weights for the VALIDATION split (rho uniform, from the fold's
+        # TRAIN-split pi_hat). They do not depend on the epoch, so they are computed once outside.
+        self.val_weights = None if val_weights is None else np.asarray(val_weights, dtype=float)
         self.device = cfg.device
         self.model.to(self.device)
 
@@ -124,7 +134,11 @@ class Trainer:
         loss = float(nn.functional.cross_entropy(logits, data.y).item())
         proba = torch.softmax(logits, dim=1).cpu().numpy()
         y = data.y.cpu().numpy()
-        return {"loss": loss, "macro_f1": _macro_f1(y, proba), "macro_auroc": _macro_auroc(y, proba)}
+        out = {"loss": loss, "macro_f1": _macro_f1(y, proba), "macro_auroc": _macro_auroc(y, proba),
+               "pn_bacc": float("nan")}
+        if self.val_weights is not None:
+            out["pn_bacc"] = float(pn_balanced_accuracy(y, proba.argmax(axis=1), self.val_weights))
+        return out
 
     def fit(self, train: Tensors, val: Tensors) -> dict:
         cfg = self.cfg
@@ -135,8 +149,13 @@ class Trainer:
         opt = torch.optim.AdamW(self.model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
         n = len(train)
         history: list[dict] = []
+        # PRIMARY checkpoint rule: best validation macro-F1 (drives early stopping / patience).
         best = {"macro_f1": -1.0, "epoch": -1}
         best_state = copy.deepcopy(self.model.state_dict())
+        # SECONDARY checkpoint rule: best validation PN balanced accuracy (rho uniform), tracked on
+        # every epoch the run actually trains, but never used to stop training.
+        best_pn = {"pn_bacc": -1.0, "epoch": -1}
+        best_pn_state = copy.deepcopy(self.model.state_dict())
         epochs_no_improve = 0
 
         for epoch in range(cfg.max_epochs):
@@ -156,20 +175,31 @@ class Trainer:
             train_loss = epoch_loss / n
 
             vm = self._val_metrics(val)
+            # ``val_pn_bacc`` is NaN when not computable (no val_weights). NaN is not self-equal,
+            # so it must not be stored in the per-epoch history, or two identical runs would
+            # compare unequal. Store ``None`` ("not computed") instead; the metric stays NaN
+            # inside ``vm`` so the finite guard below still works.
+            val_pn_bacc = float(vm["pn_bacc"])
             history.append({"epoch": epoch, "train_loss": train_loss, "val_loss": vm["loss"],
-                            "val_macro_f1": vm["macro_f1"], "val_macro_auroc": vm["macro_auroc"]})
-            if vm["macro_f1"] > best["macro_f1"] + 1e-12:
+                            "val_macro_f1": vm["macro_f1"], "val_macro_auroc": vm["macro_auroc"],
+                            "val_pn_bacc": val_pn_bacc if np.isfinite(val_pn_bacc) else None})
+            improved = vm["macro_f1"] > best["macro_f1"] + 1e-12
+            if improved:
                 best = {"macro_f1": vm["macro_f1"], "epoch": epoch}
                 best_state = copy.deepcopy(self.model.state_dict())
                 epochs_no_improve = 0
             else:
                 epochs_no_improve += 1
-                if epochs_no_improve >= cfg.patience:
-                    break
+            # Track the secondary state on every epoch, before any early-stopping break.
+            if np.isfinite(vm["pn_bacc"]) and vm["pn_bacc"] > best_pn["pn_bacc"] + 1e-12:
+                best_pn = {"pn_bacc": vm["pn_bacc"], "epoch": epoch}
+                best_pn_state = copy.deepcopy(self.model.state_dict())
+            if not improved and epochs_no_improve >= cfg.patience:
+                break
 
         self.model.load_state_dict(best_state)
-        return {"history": history, "best": best, "epochs_run": len(history),
-                "best_state": best_state}
+        return {"history": history, "best": best, "best_pn_bacc": best_pn, "epochs_run": len(history),
+                "best_state": best_state, "best_pn_bacc_state": best_pn_state}
 
 
 def train_arm(
@@ -180,13 +210,15 @@ def train_arm(
     cfg: TrainConfig,
     model_cfg_kwargs: dict | None = None,
     priors: Priors | None = None,
+    val_weights: np.ndarray | None = None,
 ) -> tuple[FusionModel, dict, float]:
     """Fit loss arm *arm* on one fold. Returns (model, result_dict, wall_clock_seconds).
 
     This is the REAL entry point for every arm; ``train_a0`` delegates to it. It seeds *before*
     constructing the model so that weight initialisation is reproducible, and ``Trainer.fit``
     re-seeds again so the dropout/permutation stream is independent of the init draw. A fold is
-    therefore fully deterministic for a given ``cfg.seed``.
+    therefore fully deterministic for a given ``cfg.seed``. ``val_weights`` (optional) are the
+    fixed validation PN weights for the SECONDARY checkpoint rule.
     """
     from dataclasses import replace
 
@@ -195,7 +227,7 @@ def train_arm(
     cfg = replace(cfg, arm=arm)
     set_seed(cfg.seed, cfg.deterministic)
     model = FusionModel(ModelConfig(feat_dims=feat_dims, **(model_cfg_kwargs or {})))
-    trainer = Trainer(model, cfg, priors)
+    trainer = Trainer(model, cfg, priors, val_weights)
     t0 = time.time()
     result = trainer.fit(train, val)
     result["seconds"] = time.time() - t0

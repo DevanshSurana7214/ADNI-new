@@ -1,0 +1,6 @@
+rule,arm,n_runs,median,mean,min,max,n_below_5,flag_median_below_5
+primary,A0,15,3.0,4.0,0,12,9,True
+primary,A1,15,7.0,9.333333333333334,0,35,5,False
+primary,A2,15,3.0,3.8666666666666667,0,16,10,True
+primary,A3,15,10.0,12.933333333333334,0,56,3,False
+primary,A4,15,10.0,8.866666666666667,0,23,5,False
