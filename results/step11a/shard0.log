@@ -1,0 +1,46 @@
+[ok 1/55] R2_A0 s0 f0 ep= 52 best= 26/ 26 valF1=0.6672 valPN=0.6757 121.9s nan=False
+[ok 2/55] R2_A0 s0 f3 ep= 44 best= 18/ 18 valF1=0.6507 valPN=0.6441 100.6s nan=False
+[ok 3/55] R2_A0 s1 f1 ep= 45 best= 19/ 39 valF1=0.6312 valPN=0.6195 103.3s nan=False
+[ok 4/55] R2_A0 s1 f4 ep= 36 best= 10/ 10 valF1=0.6749 valPN=0.6521 82.1s nan=False
+[ok 5/55] R2_A0 s2 f2 ep= 39 best= 13/ 17 valF1=0.6278 valPN=0.6208 89.7s nan=False
+[ok 6/55] R2_A1 s0 f0 ep= 52 best= 26/ 26 valF1=0.6438 valPN=0.6773 119.9s nan=False
+[ok 7/55] R2_A1 s0 f3 ep= 44 best= 18/ 18 valF1=0.6249 valPN=0.6434 100.9s nan=False
+[ok 8/55] R2_A1 s1 f1 ep= 51 best= 25/ 18 valF1=0.6118 valPN=0.6263 117.3s nan=False
+[ok 9/55] R2_A1 s1 f4 ep= 48 best= 22/ 22 valF1=0.6508 valPN=0.6592 110.2s nan=False
+[ok 10/55] R2_A1 s2 f2 ep= 68 best= 42/ 42 valF1=0.6110 valPN=0.6242 157.1s nan=False
+[skip] R2_A4 s0 f0 (already done)
+[ok 12/55] R2_A4 s0 f3 ep= 44 best= 18/ 11 valF1=0.6091 valPN=0.6564 103.0s nan=False
+[ok 13/55] R2_A4 s1 f1 ep=108 best= 82/ 82 valF1=0.6190 valPN=0.6405 251.7s nan=False
+[ok 14/55] R2_A4 s1 f4 ep= 48 best= 22/  8 valF1=0.6340 valPN=0.6630 112.7s nan=False
+[ok 15/55] R2_A4 s2 f2 ep= 78 best= 52/ 43 valF1=0.5995 valPN=0.6245 191.0s nan=False
+[ok 16/55] A4_tau0p5 s0 f0 ep= 20 best=  4/  4 valF1=0.6547 valPN=0.6994 32.5s nan=False
+[ok 17/55] A4_tau0p5 s0 f3 ep= 20 best=  4/  4 valF1=0.6373 valPN=0.6470 32.9s nan=False
+[ok 18/55] A4_tau0p5 s1 f1 ep= 31 best= 15/ 17 valF1=0.6164 valPN=0.6205 50.5s nan=False
+[ok 19/55] A4_tau0p5 s1 f4 ep= 16 best=  0/  4 valF1=0.6515 valPN=0.6490 26.2s nan=False
+[ok 20/55] A4_tau0p5 s2 f2 ep= 35 best= 19/  3 valF1=0.5999 valPN=0.6121 57.3s nan=False
+[ok 21/55] A4_tau1p5 s0 f0 ep= 28 best= 12/ 12 valF1=0.6228 valPN=0.6701 45.6s nan=False
+[ok 22/55] A4_tau1p5 s0 f3 ep= 24 best=  8/ 10 valF1=0.5733 valPN=0.6351 39.1s nan=False
+[ok 23/55] A4_tau1p5 s1 f1 ep= 52 best= 36/ 31 valF1=0.5962 valPN=0.6331 84.3s nan=False
+[ok 24/55] A4_tau1p5 s1 f4 ep= 30 best= 14/  5 valF1=0.6131 valPN=0.6500 48.9s nan=False
+[ok 25/55] A4_tau1p5 s2 f2 ep= 29 best= 13/ 13 valF1=0.5721 valPN=0.6194 47.3s nan=False
+[ok 26/55] A3_clip0p5_2 s0 f0 ep= 28 best= 12/  6 valF1=0.6395 valPN=0.6835 45.7s nan=False
+[ok 27/55] A3_clip0p5_2 s0 f3 ep= 20 best=  4/  3 valF1=0.6023 valPN=0.6422 32.7s nan=False
+[ok 28/55] A3_clip0p5_2 s1 f1 ep= 37 best= 21/  6 valF1=0.6108 valPN=0.6222 60.6s nan=False
+[ok 29/55] A3_clip0p5_2 s1 f4 ep= 16 best=  0/  0 valF1=0.6395 valPN=0.6716 26.4s nan=False
+[ok 30/55] A3_clip0p5_2 s2 f2 ep= 29 best= 13/  4 valF1=0.5939 valPN=0.6226 47.6s nan=False
+[skip] A3_clip0p1_10 s0 f0 (already done)
+[ok 32/55] A3_clip0p1_10 s0 f3 ep= 37 best= 21/  1 valF1=0.6130 valPN=0.6362 62.1s nan=False
+[ok 33/55] A3_clip0p1_10 s1 f1 ep= 49 best= 33/ 15 valF1=0.6052 valPN=0.6214 84.6s nan=False
+[ok 34/55] A3_clip0p1_10 s1 f4 ep= 16 best=  0/  0 valF1=0.6369 valPN=0.6715 26.5s nan=False
+[ok 35/55] A3_clip0p1_10 s2 f2 ep= 26 best= 10/  6 valF1=0.5887 valPN=0.6192 43.3s nan=False
+[skip] A0_pdrop0 s0 f0 (already done)
+[ok 37/55] A0_pdrop0 s0 f3 ep= 18 best=  2/  4 valF1=0.6400 valPN=0.6272 24.0s nan=False
+[ok 38/55] A0_pdrop0 s1 f1 ep= 25 best=  9/  9 valF1=0.6249 valPN=0.6024 33.9s nan=False
+[ok 39/55] A0_pdrop0 s1 f4 ep= 18 best=  2/  2 valF1=0.6506 valPN=0.6227 24.1s nan=False
+[ok 40/55] A0_pdrop0 s2 f2 ep= 19 best=  3/ 10 valF1=0.6105 valPN=0.6008 25.4s nan=False
+[ok 41/55] A0_pdrop0p5 s0 f0 ep= 23 best=  7/  3 valF1=0.6640 valPN=0.6700 43.2s nan=False
+[ok 42/55] A0_pdrop0p5 s0 f3 ep= 19 best=  3/  3 valF1=0.6568 valPN=0.6405 36.9s nan=False
+[ok 43/55] A0_pdrop0p5 s1 f1 ep= 23 best=  7/ 15 valF1=0.6276 valPN=0.6183 45.2s nan=False
+[ok 44/55] A0_pdrop0p5 s1 f4 ep= 19 best=  3/  3 valF1=0.6518 valPN=0.6429 37.4s nan=False
+[ok 45/55] A0_pdrop0p5 s2 f2 ep= 26 best= 10/ 10 valF1=0.6301 valPN=0.6097 42.6s nan=False
+[ok 46/55] A4_pdrop0 s0 f0 ep= 29 best= 13/  7 valF1=0.6297 valPN=0.6710 22.9s nan=False

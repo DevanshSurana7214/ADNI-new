@@ -1,0 +1,30 @@
+# Step 11a (robustness only) - PRE-REGISTERED grid. Frozen before any run was made; do not edit
+# after seeing results. Recipe 1 ("R1") is the frozen configs/model.yaml used by Steps 7-10:
+# lr 1.0e-04, weight_decay 0.3, batch 256, enc_dropout 0.2, attn_dropout 0.1, max 100 epochs,
+# patience 15, modality_dropout 0.25, tau 1, clip [0.2, 5].
+#
+# Everything below is an override of recipe 1. Sensitivity settings are evaluated at recipe 1 and
+# compared, paired per episode, against their recipe-1 counterpart (A0/A3/A4 from Step 9).
+
+# --- R2: the second training recipe (loss arms A0, A1, A4) ---
+recipe_2:
+  lr: 3.0e-05
+  weight_decay: 0.3
+  batch_size: 128
+  enc_dropout: 0.4
+  attn_dropout: 0.2
+  max_epochs: 150
+  patience: 25
+
+# --- sensitivity at recipe 1 ---
+# tau (A4 logit-adjustment temperature), clip (A3 training weight bounds, [wmin, wmax]) and
+# modality_dropout (the model's dropout p AND the p_drop of the matching mask-process prior).
+sensitivity:
+  - {name: A4_tau0p5, arm: A4, tau: 0.5}
+  - {name: A4_tau1p5, arm: A4, tau: 1.5}
+  - {name: A3_clip0p5_2, arm: A3, wmin: 0.5, wmax: 2.0}
+  - {name: A3_clip0p1_10, arm: A3, wmin: 0.1, wmax: 10.0}
+  - {name: A0_pdrop0, arm: A0, modality_dropout: 0.0}
+  - {name: A0_pdrop0p5, arm: A0, modality_dropout: 0.5}
+  - {name: A4_pdrop0, arm: A4, modality_dropout: 0.0}
+  - {name: A4_pdrop0p5, arm: A4, modality_dropout: 0.5}

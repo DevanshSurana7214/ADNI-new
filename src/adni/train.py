@@ -42,6 +42,7 @@ class TrainConfig:
     deterministic: bool = True
     arm: str = "A0"          # loss arm A0-A4 (PIPELINE_v2 section 6); one config switch for all arms
     tau: float = 1.0         # A4 logit-adjustment temperature (1.0 per the spec)
+    clip: tuple[float, float] | None = None   # A3 weight-clip override (Step 11a); None = [0.2, 5]
 
 
 @dataclass
@@ -172,7 +173,7 @@ class Trainer:
                 logits, _, eff = self.model(batch.feats, batch.mask, apply_modality_dropout=True)
                 patterns = mask_to_pattern(eff)
                 loss = arm_loss(cfg.arm, logits, batch.y, patterns, self.priors, cfg.tau,
-                                shuffle_a3=self.shuffle_a3)
+                                shuffle_a3=self.shuffle_a3, clip=cfg.clip)
                 loss.backward()
                 opt.step()
                 epoch_loss += float(loss.item()) * len(idx)

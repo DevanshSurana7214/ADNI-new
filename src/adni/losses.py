@@ -112,9 +112,14 @@ def pattern_weights(patterns, priors: Priors, device) -> torch.Tensor:
     return w / w.mean()
 
 
-def joint_weights(patterns, y: torch.Tensor, priors: Priors, rho=None, device=None) -> torch.Tensor:
+def joint_weights(patterns, y: torch.Tensor, priors: Priors, rho=None, device=None,
+                  clip: tuple[float, float] | None = None) -> torch.Tensor:
     """A3 weights ``rho(c) / pi(c | m_tilde)`` (rho uniform unless an explicit (3,) rho is passed),
-    clipped to [0.2, 5] and renormalised to mean 1 per batch."""
+    clipped to [0.2, 5] and renormalised to mean 1 per batch.
+
+    ``clip`` (Step 11a sensitivity) overrides the default ``[WMIN, WMAX] = [0.2, 5]`` bounds; it is a
+    training-loss setting only and never changes the evaluation metric.
+    """
     device = device if device is not None else y.device
     idx = _sub_index(patterns, priors, device)
     pi_t = torch.tensor(priors.pi.to_numpy(dtype=float), dtype=torch.float32, device=device)  # (3, S)
@@ -124,7 +129,10 @@ def joint_weights(patterns, y: torch.Tensor, priors: Priors, rho=None, device=No
     else:
         r = torch.as_tensor(rho, dtype=torch.float32, device=device)
         rho_y = r[y]
-    w = torch.clamp(rho_y / pi_sel, WMIN, WMAX)
+    wmin, wmax = clip if clip is not None else (WMIN, WMAX)
+    if not (float(wmin) <= float(wmax)):
+        raise ValueError(f"clip bounds must satisfy wmin <= wmax, got {clip!r}")
+    w = torch.clamp(rho_y / pi_sel, float(wmin), float(wmax))
     return w / w.mean()
 
 
@@ -141,12 +149,14 @@ def arm_loss(
     priors: Priors | None,
     tau: float = 1.0,
     shuffle_a3: bool = False,
+    clip: tuple[float, float] | None = None,
 ) -> torch.Tensor:
     """Training loss for one batch under *arm*; *patterns* is the effective mask per row (strings).
 
     ``shuffle_a3=True`` is the Step 10 control C-shuf: for A3 the per-episode weights are randomly
     permuted across the rows of the batch (a fresh permutation every batch, i.e. within every
     epoch), so a weight is no longer tied to the episode's own (c, m_tilde). Only A3 is affected.
+    ``clip`` (Step 11a) overrides the A3 weight-clipping bounds; other arms ignore it.
     """
     if arm == "A0":
         return F.cross_entropy(logits, y)
@@ -159,7 +169,7 @@ def arm_loss(
         w = pattern_weights(patterns, priors, logits.device)
         return (w * F.cross_entropy(logits, y, reduction="none")).mean()
     if arm == "A3":
-        w = joint_weights(patterns, y, priors, device=logits.device)
+        w = joint_weights(patterns, y, priors, device=logits.device, clip=clip)
         if shuffle_a3:
             w = shuffle_weights(w)
         return (w * F.cross_entropy(logits, y, reduction="none")).mean()

@@ -1,0 +1,15 @@
+[data] step9 rows=556080 step11a rows=1350480 runsets=11
+[eval primary] evaluated 16 run-sets
+[eval secondary] evaluated 16 run-sets
+[main primary] wrote main_table_primary.csv
+[main secondary] wrote main_table_secondary.csv
+[pc primary] wrote runset_pc_primary.csv
+[pc secondary] wrote runset_pc_secondary.csv
+[paired primary] partial: trade-off (A4 wins PN-BAcc but fails macro-F1 non-inferiority) | full-rule: negative result
+[paired secondary] partial: trade-off (A4 wins PN-BAcc but fails macro-F1 non-inferiority) | full-rule: negative result
+[figure] wrote pn_bacc_vs_macro_f1.png
+
+=== VERDICTS (H3 under R2) ===
+primary: partial=trade-off (A4 wins PN-BAcc but fails macro-F1 non-inferiority) | full=negative result | conclusion changes=False
+secondary: partial=trade-off (A4 wins PN-BAcc but fails macro-F1 non-inferiority) | full=negative result | conclusion changes=False
+[wrote analysis under C:\D\5th Sem\ADNI NEW\adni-shortcut\results\step11a]
