@@ -1,0 +1,97 @@
+# Step 11b (confirmatory check + exploratory arms) - PRE-REGISTERED. This file was written
+# BEFORE any Step 11b run was made and must not be edited afterwards.
+#
+# Recipe 1 ("R1") = frozen configs/model.yaml (Steps 7-10). Recipe 2 ("R2") = the Step 11a
+# recipe: lr 3.0e-05, weight_decay 0.3, batch_size 128, enc_dropout 0.4, attn_dropout 0.2,
+# max_epochs 150, patience 25 (all other values = recipe 1).
+
+# ---------------------------------------------------------------------------
+# A. Confirmatory check (held-out S2): A4 with tau = 0.5 (chosen from S1 Step 11a results)
+# ---------------------------------------------------------------------------
+confirmatory:
+  split: s2                      # results/step03/splits.json -> s2 (single fixed split)
+  seeds: [0, 1, 2]               # 3 model seeds; the split is fixed, a seed varies init only
+  # New runs (everything else is reused):
+  #   recipe 1: A4 tau 0.5 (comparators A0/A1/A4 tau 1 reused from results/step10/s2)
+  #   recipe 2: A0, A1, A4 tau 1, A4 tau 0.5 (so every R2 comparison is within-recipe)
+  new_runsets:
+    - {name: S2R1_A4_tau0p5, recipe: R1, arm: A4, tau: 0.5}
+    - {name: S2R2_A0,        recipe: R2, arm: A0, tau: 1.0}
+    - {name: S2R2_A1,        recipe: R2, arm: A1, tau: 1.0}
+    - {name: S2R2_A4,        recipe: R2, arm: A4, tau: 1.0}
+    - {name: S2R2_A4_tau0p5, recipe: R2, arm: A4, tau: 0.5}
+  # Pre-declared reading (fixed before the runs): tau = 0.5 is CONFIRMED only if BOTH
+  #   (i)  A4(tau 0.5) - A0   PN-BAcc   95% CI lower bound > 0
+  #   (ii) A4(tau 0.5) - A0   macro-F1  95% CI lower bound > -0.02
+  # hold. Evaluated under recipe 1 (primary, the recipe where tau 0.5 was selected) and
+  # replicated under R2. The rule is never re-fit and tau is not changed afterwards.
+  decision:
+    pn_bacc_ci_low_above: 0.0
+    macro_f1_ci_low_above: -0.02
+  paired_comparisons:            # reported for BOTH recipes, both checkpoint rules
+    - "A4(tau0.5) - A0"
+    - "A4(tau0.5) - A1"
+    - "A4(tau0.5) - A4(tau1)"
+
+# ---------------------------------------------------------------------------
+# B. Exploratory arms under R2 on the S1 grid (3 seeds x 5 folds) - ALL RESULTS EXPLORATORY
+# ---------------------------------------------------------------------------
+exploratory:
+  recipe: R2                     # identical overrides as configs/step11a_robustness.yaml recipe_2
+  r2:
+    lr: 3.0e-05
+    weight_decay: 0.3
+    batch_size: 128
+    enc_dropout: 0.4
+    attn_dropout: 0.2
+    max_epochs: 150
+    patience: 25
+  seeds: [0, 1, 2]
+  folds: [0, 1, 2, 3, 4]
+  comparator: R2_A4              # = A4(R2, tau 1) from Step 11a results/step11a (reused, NOT retrained)
+  d_pattern_embed: 16            # 4 modalities -> 16 possible availability patterns
+  arms:
+    - name: A5
+      base: A4                   # loss arm; adds FiLM pattern conditioning on the EFFECTIVE mask
+      film: true
+    - name: A6                   # A5 + cross-view consistency
+      base: A4
+      film: true
+      lambda_consistency: 0.1    # loss = A4 CE(view 1) + 0.1 * soft-CE(view 1 || view 2 detached)
+      two_views: true
+      stop_gradient_view2: true
+    - name: A7                   # A6 + pattern-aware MoE (K = 4 residual-MLP experts)
+      base: A4
+      film: true
+      lambda_consistency: 0.1
+      two_views: true
+      stop_gradient_view2: true
+      moe:
+        n_experts: 4
+        router_input: [h_pooled, pattern_embedding, mask]   # NO label-dependent input
+    - name: A8                   # A6 + class-dependent prototypes (weight 0.1)
+      base: A4
+      film: true
+      lambda_consistency: 0.1
+      two_views: true
+      stop_gradient_view2: true
+      prototypes:
+        weight: 0.1             # loss = A4 CE(view 1) + 0.1 * consistency + 0.1 * prototype CE
+  # Exact loss of A8 (pre-declared; restated in the report):
+  #   L = CE(s_v1 + tau*log pi(c|m_v1), y)                        [A4 term, tau = 1, view 1]
+  #       + 0.1 * [ -sum_c p_v2(c) * log softmax(s_v1)_c ]        [cross-view consistency;
+  #        view 2 = second modality-dropout draw of the SAME batch, computed under no-grad]
+  #       + 0.1 * CE( -||h_v1 - mu_(c, m_v1)||^2 , y )            [prototype term;
+  #        h_v1 = FiLM-conditioned CLS representation, mu_(c,m) = mu_c + W_b(H(mu_c) * (W_e e_m))]
+  diagnostics:
+    embedding_swap: true         # replace e_m by that of a random OTHER test episode; report TV
+    mask_intervention: true      # Step 10 remove-vs-content-swap at the rho-uniform operating point
+    donors_seed_formula: "seed * 1000000 + fold * 100 + modality_index"   # same as Step 10
+  protocol:
+    checkpoint_rules: [primary, secondary]   # same definitions as Steps 9-11a
+    aggregation: "Step 6b uniform: seed-average probabilities, pooled OOF, one 2,000-resample
+      subject-cluster bootstrap, separately per checkpoint rule"
+    holm: "over the four A5-A8 vs A4(R2) PN-BAcc comparisons, per checkpoint rule"
+  labels: EXPLORATORY            # every A5-A8 result is labelled EXPLORATORY in tables and report
+  guardrails: "No selection among A5-A8; no use of A5-A8 results to change A0-A4, the recipe or
+    any pre-declared rule; no window sensitivities; no paper assets."

@@ -1,0 +1,18 @@
+[S2] train=8716 val=959 test=3565
+[ok 1/15] S2R1_A4_tau0p5 s0 ep= 17 best=  1/  1 valF1=0.6167 35.2s
+[ok 2/15] S2R1_A4_tau0p5 s1 ep= 19 best=  3/  3 valF1=0.5990 33.1s
+[ok 3/15] S2R1_A4_tau0p5 s2 ep= 23 best=  7/  8 valF1=0.6258 40.3s
+[ok 4/15] S2R2_A0 s0 ep= 33 best=  7/  7 valF1=0.6306 100.9s
+[ok 5/15] S2R2_A0 s1 ep= 36 best= 10/ 10 valF1=0.6262 109.2s
+[ok 6/15] S2R2_A0 s2 ep= 37 best= 11/ 15 valF1=0.6318 110.1s
+[ok 7/15] S2R2_A1 s0 ep= 43 best= 17/  9 valF1=0.6010 130.2s
+[ok 8/15] S2R2_A1 s1 ep= 47 best= 21/ 12 valF1=0.6000 142.5s
+[ok 9/15] S2R2_A1 s2 ep= 53 best= 27/ 16 valF1=0.6052 161.8s
+[ok 10/15] S2R2_A4 s0 ep= 44 best= 18/  8 valF1=0.6026 136.0s
+[ok 11/15] S2R2_A4 s1 ep= 58 best= 32/ 12 valF1=0.5901 176.1s
+[ok 12/15] S2R2_A4 s2 ep= 56 best= 30/  9 valF1=0.5978 170.7s
+[ok 13/15] S2R2_A4_tau0p5 s0 ep= 33 best=  7/  8 valF1=0.6170 99.6s
+[ok 14/15] S2R2_A4_tau0p5 s1 ep= 31 best=  5/  5 valF1=0.6055 93.3s
+[ok 15/15] S2R2_A4_tau0p5 s2 ep= 39 best= 13/ 15 valF1=0.6173 120.5s
+[combined] oof_all.parquet rows=192510 runs=15
+[finished] ran=15 skipped=0 failed=0

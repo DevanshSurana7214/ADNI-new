@@ -1,0 +1,5 @@
+[confirmatory] S2 metrics + paired + verdicts
+[confirmatory primary] R1: not confirmed | R2: not confirmed
+[confirmatory secondary] R1: not confirmed | R2: not confirmed
+[exploratory] A5-A8 metrics + paired + Holm + diagnostics
+[wrote analysis under C:\D\5th Sem\ADNI NEW\adni-shortcut\results\step11b]

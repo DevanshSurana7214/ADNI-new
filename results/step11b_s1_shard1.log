@@ -1,0 +1,21 @@
+[ok 1/20] A5 s0 f1 ep= 34 best=  8/  9 valF1=0.6198 valPN=0.6594 130.3s nan=False
+[ok 2/20] A5 s0 f4 ep= 71 best= 45/  4 valF1=0.5969 valPN=0.6540 255.4s nan=False
+[ok 3/20] A5 s1 f2 ep= 60 best= 34/ 31 valF1=0.6117 valPN=0.6564 212.9s nan=False
+[ok 4/20] A5 s2 f0 ep=150 best=127/ 15 valF1=0.5721 valPN=0.6033 532.1s nan=False
+[ok 5/20] A5 s2 f3 ep= 41 best= 15/ 15 valF1=0.5712 valPN=0.6249 144.9s nan=False
+[ok 6/20] A6 s0 f1 ep= 58 best= 32/  5 valF1=0.6257 valPN=0.6580 301.1s nan=False
+[ok 7/20] A6 s0 f4 ep= 38 best= 12/  8 valF1=0.5901 valPN=0.6445 187.1s nan=False
+[ok 8/20] A6 s1 f2 ep= 77 best= 51/ 35 valF1=0.6155 valPN=0.6621 358.3s nan=False
+[ok 9/20] A6 s2 f0 ep= 45 best= 19/ 19 valF1=0.5692 valPN=0.6122 204.2s nan=False
+[ok 10/20] A6 s2 f3 ep= 70 best= 44/  5 valF1=0.5666 valPN=0.6193 309.8s nan=False
+[ok 11/20] A7 s0 f1 ep= 42 best= 16/  7 valF1=0.5984 valPN=0.6452 225.2s nan=False
+[ok 12/20] A7 s0 f4 ep= 38 best= 12/  8 valF1=0.5829 valPN=0.6460 174.5s nan=False
+[ok 13/20] A7 s1 f2 ep= 89 best= 63/ 27 valF1=0.6079 valPN=0.6599 367.0s nan=False
+[ok 14/20] A7 s2 f0 ep=132 best=106/ 22 valF1=0.5878 valPN=0.6150 539.0s nan=False
+[ok 15/20] A7 s2 f3 ep= 53 best= 27/  4 valF1=0.5681 valPN=0.6287 219.5s nan=False
+[ok 16/20] A8 s0 f1 ep= 58 best= 32/  5 valF1=0.6236 valPN=0.6545 218.2s nan=False
+[ok 17/20] A8 s0 f4 ep= 69 best= 43/  3 valF1=0.5917 valPN=0.6481 259.2s nan=False
+[ok 18/20] A8 s1 f2 ep= 87 best= 61/ 61 valF1=0.6134 valPN=0.6626 310.3s nan=False
+[ok 19/20] A8 s2 f0 ep= 44 best= 18/ 22 valF1=0.5713 valPN=0.6118 138.5s nan=False
+[ok 20/20] A8 s2 f3 ep= 48 best= 22/  2 valF1=0.5680 valPN=0.6175 151.2s nan=False
+[finished shard 1/3] ran=20 skipped=0 failed=0 (log: C:\D\5th Sem\ADNI NEW\adni-shortcut\results\step11b\s1\run_log_shard1.jsonl)

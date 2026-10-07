@@ -1,0 +1,11 @@
+arm,ckpt_rule,runs,median,mean,min,max,n_below_5,flag_median_below_5,n_eq_0,flag_epoch_0
+R2_A4,primary,15,23.0,33.8,7,82,0,False,0,False
+R2_A4,secondary,15,15.0,22.666666666666668,3,82,2,False,0,False
+A5,primary,15,32.0,37.0,8,127,0,False,0,False
+A5,secondary,15,11.0,16.133333333333333,4,49,2,False,0,False
+A6,primary,15,32.0,35.46666666666667,7,105,0,False,0,False
+A6,secondary,15,13.0,21.533333333333335,5,105,0,False,0,False
+A7,primary,15,38.0,43.333333333333336,6,106,0,False,0,False
+A7,secondary,15,9.0,14.0,1,60,2,False,0,False
+A8,primary,15,32.0,37.6,7,94,0,False,0,False
+A8,secondary,15,8.0,13.733333333333333,2,61,3,False,0,False
