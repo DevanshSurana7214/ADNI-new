@@ -1,0 +1,127 @@
+# Step 13a - post-hoc joint correction on EXISTING out-of-fold predictions (EXPLORATORY).
+#
+# This is a controlled, prediction-level correction applied to already-computed OOF probabilities.
+# No training is performed by this step: the inputs are frozen OOF tables from steps 6 and 11a/11b.
+# Everything below is written and committed before any result is computed, and is frozen for this
+# step. tau, alpha and the margins are NOT tuned on the data here.
+#
+# Corrected probability for class c (per episode):
+#   p'_c proportional to p_c * rho(c) / pi(c | m)^tau, renormalised over c.
+#
+# pi is the mask-process prior from the fold's TRAIN split:
+#   - neural arm (A0(R2), A4(R2)): priors.pi_table(P_cm, p_drop=0.25) evaluated at the NATURAL mask
+#     (the pattern of the observed modalities for that episode)
+#   - B1 (step06/oof_b1.parquet): the natural-smoothed P(c|m) from the TRAIN split
+#
+# Operating points:
+#   rho uniform (rho(c) = 1/3)        -> primary operating point
+#   rho = P(c) (training-split marginal) -> secondary operating point
+#
+# Models X:
+#   B1        results/step06/oof_b1.parquet          (no post-hoc correction of A1/A4; A4(R2) reported
+#                                                     as reference only at both operating points, raw)
+#   A0 (R2)   results/step11a/oof_all.parquet, arm=A0, recipe R2 (Step 11a)
+#   E1        average of the two CORRECTED posteriors (B1 and A0(R2)), plus uncorrected E1 = average
+#             of the raw (uncorrected) probabilities, per (seed, fold, episode) on the test split
+#
+# Uniform protocol (mirrors steps 6b/9/10/11a/11b):
+#   - seed-averaged probabilities (mean over seeds 0/1/2) per episode
+#   - pooled OOF on the TEST split
+#   - one subject-cluster bootstrap (n=2000, seed=0)
+#   - both checkpoint rules (primary / secondary) for the neural arms
+#
+# Metrics:
+#   - natural macro-AUROC, macro-F1, balanced accuracy, per-class F1, ECE
+#   - PN-BAcc(uniform)
+#   - WITHIN-PATTERN macro-AUROC: patterns with n >= 100 test episodes AND at least 10 episodes of
+#     every class; fixed pattern list from the FULL data (not from the corrected subset); size-weighted
+#     mean of one-vs-rest macro-AUROC per pattern; report the included pattern list and their n.
+#
+# Comparisons (corrected minus uncorrected), with CIs:
+#   - PN-BAcc(uniform) at rho uniform      -> Holm over the 3 models (B1, A0(R2), E1)
+#   - natural macro-F1 at rho = P(c)       -> Holm over the 3 models
+#   - within-pattern macro-AUROC           -> Holm over the 3 models
+#
+# H3 (v3) per model X is SUPPORTED only if ALL hold for that X (applied to each checkpoint rule
+# separately; the rule itself is not changed, only reported):
+#   1. PN-BAcc(uniform) diff (corrected - uncorrected) CI lower bound > 0  (after Holm over the 3 models)
+#   2. natural macro-F1 diff CI lower bound > -0.02
+#   3. within-pattern macro-AUROC diff CI lower bound > -0.01
+#
+# S2 version: same correction + evaluation, but using the S2 OOF of B1 and A0(R2).
+#   B1 (S2)       results/step11b/s2/oof_all.parquet, arm=b1?  (reused S2 OOF; see below)
+#   A0 (R2, S2)   results/step11b/s2/oof_all.parquet, arm=A0 (Step 11b)
+#   S2 uses a single fold (fold 0) and 3 seeds; the protocol shift is exactly the frozen S2 split.
+#
+# Mask-intervention diagnostic: corrected-vs-uncorrected A0(R2) on the Step 10 mask-intervention
+# outcome (tau CN-share shift), IF the weights/predictions used by that diagnostic are available;
+# otherwise the diagnostic is stated as not run. (No new training here.)
+#
+# Labelling: all tables, the REPORT and every output from this step are marked EXPLORATORY. No change
+# to A0-A4, recipes R1/R2, or any pre-declared rule of steps 6b/9/10/11a/11b. No tau/alpha/margin
+# tuning.
+#
+# Inputs (frozen, reused as-is):
+#   - results/step06/oof_b1.parquet                 (B1)
+#   - results/step11a/oof_all.parquet               (A0(R2), A4(R2); R2 recipe)
+#   - results/step11b/s2/oof_all.parquet            (S2 version of A0(R2) and B1 on S2)
+#   - results/step03/splits.json                    (S1 + S2 episode id sets)
+#   - docs/episodes.csv                             (labels, patterns, RIDs; used to load TRAIN-split priors)
+#
+# Outputs (script-generated):
+#   - results/improvement2/runs/<model>_corrected.parquet     corrected OOF per (seed, fold, test split)
+#   - results/improvement2/runs/<model>_uncorrected.parquet   raw OOF (reference, for the diff)
+#   - results/improvement2/runs/e1_corrected.parquet
+#   - results/improvement2/runs/e1_uncorrected.parquet
+#   - results/improvement2/tables/<table_name>.csv/.md        script-generated tables
+#   - results/improvement2/diagnostics/mask_intervention.md   if the diagnostic is run
+#   - results/improvement2/analysis.json
+#   - results/improvement2/REPORT.md
+
+base:
+  tau: 1.0
+  alpha: 0.5
+  p_drop: 0.25
+  operating_points:
+    primary:   uniform          # rho(c) = 1/3
+    secondary: P(c)             # rho = training-split marginal P(c)
+  margins:
+    macro_f1_ni: -0.02         # H3(v3) condition 2
+    within_pattern_auroc_ni: -0.01   # H3(v3) condition 3
+  bootstrap:
+    n: 2000
+    seed: 0
+  holm_family_size: 3          # B1, A0(R2), E1
+
+models:
+  B1:
+    oof: results/step06/oof_b1.parquet
+    pi_kind: natural_smoothed      # P(c|m) smoothed on TRAIN split, alpha 0.5
+    ckpt_rules: [primary, secondary]   # both rules reported for the neural-only semantic; B1 has no ckpt_rule in its OOF
+  A0_R2:
+    oof: results/step11a/oof_all.parquet
+    arm: A0
+    recipe: R2
+    ckpt_rules: [primary, secondary]
+  A4_R2_ref:
+    oof: results/step11a/oof_all.parquet
+    arm: A4
+    recipe: R2
+    ckpt_rules: [primary, secondary]
+    role: reference_only            # raw; not corrected here
+  E1:
+    components: [B1, A0_R2]
+    corrected_components: [B1, A0_R2]
+
+s2:
+  oof_a0: results/step11b/s2/oof_all.parquet
+  oof_b1: results/step11b/s2/oof_all.parquet
+  ckpt_rules: [primary, secondary]
+
+within_pattern_rule:
+  min_episodes: 100
+  min_per_class: 10
+  weighting: size            # mean of per-pattern one-vs-rest macro-AUROC weighted by n per pattern
+
+h3_v3:
+  supported: "pn_bacc_ci_low>0 (Holm over 3) AND macro_f1_ci_low>-0.02 AND within_pattern_auroc_ci_low>-0.01"

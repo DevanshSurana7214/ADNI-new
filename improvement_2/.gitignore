@@ -1,0 +1,8 @@
+# outputs (rebuild from scripts; deterministic, but bulky)
+results/improvement2/runs/
+results/improvement2/tables/
+results/improvement2/diagnostics/
+
+# python
+__pycache__/
+*.pyc
