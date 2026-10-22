@@ -13,3 +13,21 @@ results/**/blocks/
 *.pt
 *.pth
 *.joblib
+
+# Large intermediate prediction packs and checkpoint coarse staging
+improvement_6/results/coarse_stage1_preds/
+improvement_6/results/coarse_stage2_preds/
+improvement_6/results/coarse_stage3_preds/
+improvement_6/results/v61_tau_check/runs.jsonl
+
+# Delivery snapshots used only for this push
+dockercompose.yml
+Dockerfile
+run_docker.sh
+docker-compose.yml
+docker-compose.yaml
+
+# Runtime and scratch
+run_check.py
+run_v5_regen.py
+.dockerignore

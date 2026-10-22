@@ -1,0 +1,5 @@
+*.pt filter=lfs diff=lfs merge=lfs -text
+*.joblib filter=lfs diff=lfs merge=lfs -text
+*.pth filter=lfs diff=lfs merge=lfs -text
+results/**/blocks filter=lfs diff=lfs merge=lfs -text
+results/*/artifacts filter=lfs diff=lfs merge=lfs -text
