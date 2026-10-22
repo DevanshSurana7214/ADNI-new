@@ -1,0 +1,46 @@
+Pipeline
+
+1. Data preparation
+
+Take the features from your four files and the diagnosis labels from DXSUM (CN, MCI, Dementia).
+Match each diagnosis visit to the nearest MRI and PET scan for the same subject within a fixed window (e.g. 90 days). Record which modalities are present for each sample.
+Remove scans that fail QC. Normalise MRI volumes by intracranial volume.
+
+2. Characterise the joint imbalance (this is your main analysis)
+
+Count samples per class.
+Compute the share of each class that has each modality.
+Build a class × availability-pattern table (for example MRI only, MRI+AMY, all four).
+Report the imbalance across classes, across modalities, and in the combination.
+
+3. Splits and preprocessing
+
+Split by subject, stratified by class, so no subject appears in both train and test.
+Use 5-fold cross-validation, or a fixed split with a few random seeds.
+Fit imputation and scaling on training data only. Represent a missing modality with zeros plus a mask.
+
+4. Model
+
+One small encoder per modality, then concatenate the embeddings into a classifier (late fusion).
+Keep the model small. The point is the imbalance analysis, not the architecture.
+
+5. Gradient modulation
+
+Measure each modality’s contribution during training, for example the probability of the true class from that modality’s share of the logits.
+When a modality is ahead of the others, scale down its encoder gradients so the weaker modalities can catch up. This is OGM-GE.
+Optionally compute the contribution per class, so the modulation reflects the class × modality interaction.
+
+6. Experiments (same splits for all)
+
+Arm	Purpose
+Unimodal, one per modality	Shows each modality’s own strength
+Concat fusion, no modulation	Baseline that shows the imbalance
+Concat + class-weighted loss	Handles class imbalance only
+Concat + gradient modulation	Handles modality imbalance only
+Both combined	Tests the joint effect
+
+7. Evaluation
+
+Balanced accuracy, macro-F1, and recall per class (minority-class recall matters most).
+Results per availability pattern, to see whether the gain depends on which modalities a subject has.
+Modality contribution curves over training, with and without modulation.

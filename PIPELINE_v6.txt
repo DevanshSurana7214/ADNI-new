@@ -1,0 +1,294 @@
+PIPELINE v6 - JOINT CLASS x MODALITY IMBALANCE IN ADNI
+(Instructions for an AI coding agent. Read everything before writing code.)
+
+======================================================================
+0. GOAL, CONTEXT, RULES
+======================================================================
+
+RESEARCH QUESTION
+  How do class imbalance and modality-availability imbalance interact, when does
+  their combination hurt a classifier, and do cell-aware methods help?
+
+PROJECT STRUCTURE: Measure -> Isolate -> Fix
+  Part A  MEASURE  natural ADNI data: joint imbalance and where errors concentrate.
+  Part B  ISOLATE  controlled "imbalance dial": inject class imbalance and
+                   class-availability dependence into a complete-modality cohort,
+                   so cause and effect can be measured (dose-response).
+  Part C  FIX      compare imbalance-handling methods along the dial, then confirm
+                   on natural data and on a phase-held-out split.
+
+PRE-DECLARED HYPOTHESES
+  H1  Harm grows with dependence strength (lambda) and with class skew, and the two
+      interact (positive lambda x skew interaction on the performance gap).
+  H2  Cell-wise logit adjustment (M4) improves macro cell accuracy vs baseline at
+      high lambda without losing more than 0.02 macro-F1.
+  H3  Class-only methods (M2) change class trade-offs but do not fix cell failures.
+  H4  Direction of effects on natural data and phase-held-out data agrees with the dial.
+
+WHAT IS ALREADY KNOWN (from earlier exploratory work; do not re-derive, just reuse)
+  - 13240 episodes, 3145 subjects, 15 availability patterns. Modality order in all
+    pattern strings is MRI, FDG, AMY, TAU (e.g. "1010" = MRI + AMY).
+  - Cramers V (class x pattern) = 0.238, strongest inside ADNI3 (0.415).
+  - Availability is partly study era (COLPROT): AMY ~0 in ADNI1, TAU almost only
+    ADNI3/4, FDG 0 in ADNI4.
+  - Explicit mask bits are barely used by the models (mask ablation ~ 0), natural vs
+    balanced-availability gap is only 2-4 points; errors concentrate in specific
+    class x pattern cells (e.g. MCI inside CN-dominated patterns).
+  - Gradient modulation was tried and is OUT OF SCOPE.
+  - Scans are reused by several diagnosis visits; screening (sc) and baseline (bl)
+    visits give near-duplicate rows for 1888 subjects.
+
+HARD RULES
+  R1  Every split is SUBJECT-GROUPED (RID). No subject in two of train/val/test.
+  R2  All preprocessing (imputation, scaling, feature dropping, class/cell priors,
+      weights, tau selection) is fit on TRAIN data only.
+  R3  Never tune anything on test folds. Use a subject-grouped validation split
+      inside each training fold.
+  R4  Primary comparisons and metrics are declared in section 9 BEFORE running.
+      Anything else is labelled EXPLORATORY.
+  R5  All randomness seeded; every run logged (config, seed, fold, metrics) to
+      results/runs.jsonl. One YAML config drives everything.
+  R6  Report negative results honestly. Do not drop arms that do not work.
+  R7  Do not overwrite or modify the existing merged v2 artefacts (episodes.csv,
+      feature blocks, feature_spec.json, S1 folds). Read-only.
+  R8  Stop and report at the CHECKPOINTS marked below before continuing.
+
+======================================================================
+1. SETUP
+======================================================================
+1.1  Create the project layout:
+       configs/v6.yaml  src/  results/{tables,figures,runs}  report/  README.md
+1.2  Locate the existing artefacts (episodes.csv, four feature blocks:
+     mri, fdg, amy, tau; feature_spec.json; S1 folds). Record their paths in the
+     config. Do not assume file names; inspect the directory.
+1.3  Environment: python, pandas, numpy, scikit-learn, lightgbm, torch, scipy,
+     statsmodels, matplotlib. Pin versions in requirements.txt.
+1.4  Config keys (defaults): seeds=[0,1,2]; n_folds=5; n_repeats=3 (2 for the dial
+     grid if compute-limited); n_boot=2000; val_frac=0.15; min_cell_n_natural=50;
+     min_cell_n_dial=30; tau_grid=[0,0.25,0.5,1.0,1.5]; kappa=20.
+
+======================================================================
+2. DATA AUDIT (CHECKPOINT 1)
+======================================================================
+2.1  Load episodes.csv (read `pattern` as STRING; keep leading zeros).
+2.2  Assert on every row: pattern == concat(m_mri,m_fdg,m_amy,m_tau);
+     n_mod == sum of mask bits; y matches DIAGNOSIS (CN=0, MCI=1, Dementia=2);
+     |gap_days| <= 180; no duplicate episode_id; no duplicate (RID, dx_date).
+2.3  Load feature blocks; assert each block row-aligns with episodes via episode_id
+     (or the key given in feature_spec.json); assert rows with m_<mod>=0 have no
+     features and rows with m_<mod>=1 have features.
+2.4  Define COHORTS (write each as a list of episode_ids to results/cohorts/):
+       FULL      all episodes.
+       BASELINE  one episode per subject: the earliest dx_date; prefer VISCODE2=="bl"
+                 over "sc" when both fall on the earliest visit. PRIMARY cohort for
+                 Part A and Part C natural-data results.
+       DIAL      (Part B) episodes with MRI, FDG and AMY all present
+                 (m_mri=m_fdg=m_amy=1), one episode per subject (earliest).
+     Print and save: n episodes, n subjects, class counts, pattern counts per cohort.
+     DO NOT CONTINUE until the numbers are shown to the user (CHECKPOINT 1).
+
+======================================================================
+3. FOLDS AND PREPROCESSING
+======================================================================
+3.1  Natural-data cohorts (FULL, BASELINE): reuse the frozen S1 folds for FULL.
+     For BASELINE and DIAL create new StratifiedGroupKFold splits (5 folds x
+     n_repeats repeats, stratify on y, group on RID, different seed per repeat).
+     Within each training fold carve a subject-grouped validation set (val_frac)
+     for early stopping and tau selection.
+3.2  Per modality, fit on TRAIN rows that have the modality: drop features with
+     >50% missing, median impute, z-score, clip to [-5, 5].
+3.3  Missing modality encoding:
+       MLP   : zeros for the block + explicit mask bit per modality; encoder output
+               for an absent modality is multiplied by 0.
+       LGBM  : NaN for the whole block + mask bits as extra features.
+     Keep an option `hide_mask` that removes the explicit mask bits.
+
+======================================================================
+4. MODELS (keep them small and identical across arms)
+======================================================================
+4.1  LGBM: LightGBM multiclass, n_estimators<=400, learning_rate=0.05,
+     num_leaves=15, min_child_samples=20, subsample=0.8, colsample_bytree=0.8,
+     early stopping on validation log-loss (patience 30).
+4.2  MLP late fusion: one encoder per modality (Linear-ReLU-Dropout0.3-Linear-ReLU,
+     hidden 64), concatenate embeddings, linear head to 3 classes.
+     Training recipe: AdamW lr 1e-4, weight decay 0.05, batch 256, <=60 epochs,
+     patience 12 on validation macro-F1. Average predicted probabilities over seeds.
+4.3  M0 shortcut probe: multinomial logistic regression on the mask bits only.
+
+======================================================================
+5. METHODS (arms). Implement as config flags on the same models.
+======================================================================
+ M1  Baseline.
+ M2  Class-weighted loss: w_c = N / (3 * n_c) from train labels.
+ M3  Joint reweighting: w(c,p) = P(c) P(p) / P(c,p) from train, additive smoothing
+     alpha=0.5 on cell counts, weights clipped to [0.2, 5], renormalised to mean 1.
+ M4  Cell-wise logit adjustment (post-hoc, no retraining):
+       adjusted_logit_c(x, p) = log P_model(c | x, p) - tau * log Pbar(c | p)
+       Pbar(c | p) = (n_{c,p} + kappa * P(c)) / (n_p + kappa)   [train counts;
+       backs off to the global class prior for rare patterns].
+     Choose tau in tau_grid on VALIDATION by macro cell accuracy
+     (mean over class x pattern cells with n>=min_cell_n of within-cell recall).
+     tau=0 must reproduce M1 exactly (unit test).
+ M4c Class-only logit adjustment: same with Pbar(c) instead of Pbar(c|p)
+     (control for M4).
+ M5  Group DRO over class x pattern cells (MLP only): per-batch cell losses,
+     cell weights q_g updated by exponentiated gradient (eta=0.01), loss =
+     sum_g q_g * loss_g; cells with fewer than 10 train samples share one group.
+ LGBM supports M1, M2, M3, M4, M4c. MLP supports all.
+ Always also run M0.
+
+======================================================================
+6. PART A - MEASURE (natural data; BASELINE primary, FULL sensitivity)
+======================================================================
+6.1  Joint imbalance tables: class counts; P(modality | class); n_mod x class;
+     class x pattern counts; pattern composition; Cramers V and mutual information
+     (class, pattern); per-phase (COLPROT) tables and per-phase Cramers V; per-year
+     availability and Dementia share.
+6.2  Train M1 (LGBM and MLP) and M0. Report overall metrics (section 8).
+6.3  Cell analysis: within-cell recall for class x pattern cells (n>=50) and the
+     recall heatmap (headline figure 1).
+6.4  Why cells fail: for each cell compute the class's share inside that pattern
+     (P(c|p)) and plot cell recall vs P(c|p); report Spearman correlation with
+     subject-cluster bootstrap CI. (Tests the idea that rare-class-within-pattern
+     cells fail because the model follows the within-pattern prior.)
+6.5  Error decomposition: logistic regression of `correct` on class, pattern and
+     their interaction; report McFadden pseudo-R2 deltas ONLY (no naive LR p-values:
+     rows are not independent). Bootstrap by subject for CIs.
+6.6  Sensitivity: FULL cohort; +-90-day window (re-derive availability from the gap
+     columns); drop `sc` when `bl` exists.
+
+======================================================================
+7. PART B - ISOLATE (the imbalance dial) (CHECKPOINT 2 after 7.3)
+======================================================================
+7.1  Base cohort = DIAL (ground truth: MRI, FDG, AMY all observed).
+     Patterns over BASE_MODS=[mri,fdg,amy]: 7 non-empty patterns (001..111).
+7.2  Design distributions (estimated once from the FULL natural cohort projected
+     onto BASE_MODS; drop episodes whose projected pattern is 000):
+       P_marg(p)      overall pattern distribution
+       P_obs(p | c)   class-conditional pattern distribution
+     Dependence dial lambda in {0, 0.25, 0.5, 0.75, 1.0}:
+       P_lambda(p | c) = (1 - lambda) * P_marg(p) + lambda * P_obs(p | c)
+     lambda=0 is independent availability; lambda=1 is the real ADNI dependence.
+7.3  Imbalance dial: keep_frac for Dementia in {1.0, 0.5, 0.25}: randomly keep that
+     fraction of Dementia SUBJECTS in train+val only (test stays natural).
+     Generate the data for a setting: for each train/val episode with class c, draw a
+     pattern p ~ P_lambda(p | c) and mask the blocks not in p (same encoding as 3.3).
+     VALIDITY CHECK (CHECKPOINT 2): for the train sets, Cramers V(class, pattern)
+     must increase monotonically with lambda (~0 at lambda=0, close to observed at
+     lambda=1). Show this table/plot before running the grid.
+7.4  Test conditions for every trained model (all on the same held-out test fold):
+       T_matched : test patterns drawn from the same P_lambda as training
+       T_indep   : test patterns drawn from lambda=0 (independent availability)
+       T_full    : all three modalities present
+     The gap T_matched - T_indep measures how much the score depends on the
+     availability pattern.
+7.5  Grid: 5 lambda x 3 keep_frac = 15 settings. Per setting, 5 folds x n_repeats
+     with a fresh masking realisation per repeat. Run M1 and M2 and M3 and M4 and M4c
+     on LGBM and MLP, plus M5 on MLP, plus M0.
+7.6  Pattern-response matrix (counterfactual): for models trained at lambda=0 and
+     lambda=1 (keep_frac=1), evaluate every test episode under EVERY imposed pattern
+     (mask the blocks not in the pattern). Heatmap of accuracy by (class, imposed
+     pattern). This shows what the model learned about availability, independent of
+     which subjects have which pattern (headline figure 3).
+7.7  Joint-effect test (tests H1): OLS on the repeat-level results
+       macro_cell_accuracy ~ lambda + skew + lambda:skew   (M1 only, each model)
+     where skew = 1 - keep_frac. Report coefficients with cluster-robust CIs
+     (cluster = repeat/fold), and the same for balanced accuracy and for the
+     T_matched - T_indep gap. A clearly nonzero lambda:skew term is the "joint" result.
+
+======================================================================
+8. PART C - FIX AND VALIDATE ON NATURAL DATA
+======================================================================
+8.1  Dial results by method: dose-response curves (metric vs lambda, one line per
+     method, one panel per keep_frac) with 95% bands; table of method differences vs
+     M1 at (lambda=1, keep_frac=0.25) and (lambda=0, keep_frac=1).
+8.2  Natural data: run all arms on BASELINE and FULL with the same folds; report
+     metrics and paired differences vs M1.
+8.3  Phase-held-out: train on episodes with COLPROT in {ADNI1, ADNIGO, ADNI2}, test
+     on {ADNI3, ADNI4}. Remove from TRAIN any subject who has an episode in TEST.
+     Validation = grouped split of train. All arms, 3 seeds.
+8.4  Report whether directions agree across dial, natural and phase-held-out (H4).
+
+METRICS (all computed on pooled out-of-fold test predictions)
+  - balanced accuracy, macro-F1, macro-AUROC, recall per class
+  - macro cell accuracy: mean within-cell recall over class x pattern cells with
+    n >= min_cell_n (30 for dial, 50 for natural)
+  - bottom-3 cell accuracy: mean of the 3 lowest cells (use this instead of the
+    single minimum, which is noisy); report the single worst cell only as EXPLORATORY
+  - T_matched - T_indep gap (dial) and natural-minus-balanced-availability gap
+    (natural; test weights P(c)P(p)/P(c,p), alpha 0.5, clipped [0.2,5])
+  - calibration (ECE, 10 bins) for M1 vs M4
+
+======================================================================
+9. STATISTICS (declare before running)
+======================================================================
+9.1  Uncertainty: subject-cluster bootstrap (resample RIDs), n_boot=2000, 95% CIs.
+     Paired comparisons use the same resampled subjects for both arms.
+9.2  PRIMARY endpoint: macro cell accuracy. SECONDARY: balanced accuracy.
+     Non-inferiority guard: macro-F1 difference CI lower bound > -0.02.
+9.3  PRIMARY pre-declared comparisons (family of 4, Holm correction):
+       M4 vs M1, M3 vs M1, M5 vs M1, M2 vs M1     (MLP and LGBM separately where
+       applicable), at the dial setting lambda=1, keep_frac=0.25, and on BASELINE.
+     "Supported" = Holm-adjusted CI excludes 0 on the primary endpoint AND the
+     non-inferiority guard holds. Everything else is EXPLORATORY and labelled so.
+9.4  Report effect sizes with CIs. Do not use naive p-values from row-level tests.
+9.5  Seeds/repeats: report spread across repeats; do not report single-run numbers.
+
+======================================================================
+10. TESTS THE AGENT MUST WRITE AND PASS
+======================================================================
+  T1  No RID appears in more than one of train/val/test for any split.
+  T2  Scaler/imputer/prior/weight objects are fit on train only (assert by fitting on
+      a deliberately corrupted test fold and checking nothing changes).
+  T3  M4 with tau=0 equals M1 predictions exactly.
+  T4  M3 weights have mean 1 and lie in [0.2, 5]; with independent (c,p) they are ~1.
+  T5  Dial: Cramers V(class, pattern) monotone in lambda; at lambda=0 it is ~0.
+  T6  Pattern strings keep leading zeros end-to-end.
+  T7  Re-running any config with the same seed reproduces metrics exactly (MLP: set
+      deterministic flags).
+
+======================================================================
+11. DELIVERABLES
+======================================================================
+  results/tables/*.csv for every table in sections 6-8 (one file per table).
+  FIGURES (PNG, 300 dpi, labelled axes, colour-blind safe, CIs shown):
+    F1  recall heatmap class x pattern (natural)
+    F2  cell recall vs within-pattern class share (6.4)
+    F3  pattern-response matrices (7.6)
+    F4  dose-response: macro cell accuracy vs lambda per keep_frac (M1 only)
+    F5  dose-response per method (8.1)
+    F6  natural / phase-held-out method comparison (forest plot of paired diffs)
+  report/REPORT.md with: Introduction, Data and joint imbalance, Methods, Experiments,
+  Results, Discussion, Limitations. Every claim must cite a table/figure and its CI.
+  A short "Findings" section at the top stating, per hypothesis H1-H4, SUPPORTED /
+  NOT SUPPORTED / INCONCLUSIVE and why. Do not leave if/else interpretation text.
+  README.md with exact commands to reproduce everything (run_all.sh).
+
+======================================================================
+12. LIMITATIONS TO STATE IN THE REPORT
+======================================================================
+  - Availability is partly study era and protocol, not subject physiology; the dial
+    removes this confound by design but is a simulation of missingness, not real
+    ADNI practice.
+  - Reused scans and near-duplicate screening/baseline rows (handled by subject-level
+    folds, BASELINE cohort and sensitivity runs).
+  - Matching window +-180 days; TAU scans tend to come after the diagnosis.
+  - Age, sex, APOE and clinical scores are not used (cognitive scores would leak the
+    label); results are for imaging features only.
+  - Small cells (e.g. pattern 1111 with 16 CN); cells below the n threshold are
+    excluded from cell metrics.
+
+======================================================================
+13. EXECUTION ORDER AND CHECKPOINTS
+======================================================================
+  1  sections 1-2  -> CHECKPOINT 1 (data audit numbers)
+  2  sections 3-5  implement preprocessing, models, methods + tests T1-T7
+  3  section 6     Part A
+  4  sections 7.1-7.3 -> CHECKPOINT 2 (dial validity: Cramers V vs lambda)
+  5  sections 7.4-7.7  run the dial grid
+  6  section 8     Part C
+  7  sections 9, 11 statistics, figures, report
+At each checkpoint stop, summarise what you did and wait for confirmation.
+If compute is limited, reduce in this order: n_repeats for the dial grid (3 -> 2),
+the keep_frac levels (3 -> 2), then drop M5 (Group DRO). Never drop M1, M2, M4, M4c
+or the dial experiment itself.

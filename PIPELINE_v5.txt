@@ -1,0 +1,39 @@
+Pipeline
+
+1. Data
+
+Reuse your merged episode table (labels plus MRI, AMY, TAU and FDG with availability flags).
+Split by subject with 5-fold CV. Fit preprocessing on training folds only.
+
+2. Characterise the joint imbalance (you already have most of this)
+
+Class counts, availability per class, the class × pattern table, Cramér’s V, and the mutual information between class and pattern.
+Check confounders: ADNI phase and scan year. Patterns like AMY or TAU may only exist in later phases, so “availability” may partly be “cohort era”. Say this explicitly.
+
+3. Models (keep them few)
+
+A tabular gradient-boosted model (LightGBM or XGBoost, which accepts missing values) as the strong baseline.
+Your late-fusion MLP as the neural model.
+Optional: logistic regression as a simple sanity baseline.
+
+4. Core experiments (the contribution)
+
+A. Shortcut probe: Train on the availability mask alone, with no imaging features. If it beats chance clearly, that confirms H1.
+B. Mask ablation: Compare features + mask against features with the mask hidden, to see how much the model leans on availability.
+C. Mitigation arms, each compared with the plain baseline:
+class-weighted loss
+joint reweighting, with weight proportional to P(class)·P(pattern) / P(class, pattern), which breaks the dependence between class and availability
+random modality dropout during training
+2 and 3 together
+D. Balanced-availability evaluation: Also evaluate on a test set reweighted so that every class has the same pattern mix. The gap between natural and balanced results measures how much the scores depend on the availability pattern.
+
+5. Evaluation
+
+Overall: balanced accuracy, macro-F1, macro-AUROC and recall per class.
+Group-level: balanced accuracy for each class × pattern group (ignore groups with fewer than about 50 samples), plus the worst-group accuracy and the best-minus-worst gap.
+Subject-cluster bootstrap CIs, with results averaged over at least 3 seeds.
+
+6. Analysis
+
+Explain the variation in whether predictions are correct using a simple logistic regression: correct ~ class + pattern + class:pattern. This shows how much of the error comes from class, from pattern, and from their interaction. That is your “joint” result.
+Add a heatmap of recall by class × pattern. It will be your headline figure.

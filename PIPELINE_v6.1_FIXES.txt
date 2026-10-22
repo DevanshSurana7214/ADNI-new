@@ -1,0 +1,188 @@
+PIPELINE v6.1 - REVISION INSTRUCTIONS (follow after v6; do not restart from scratch)
+
+======================================================================
+0. WHY THIS REVISION
+======================================================================
+The v6 run executed correctly but several results are INVALID or UNINFORMATIVE
+because of design/implementation problems, not because the hypotheses failed:
+
+  P1  M4 and M4c are IDENTICAL to M1 on the dial and on BASELINE (all deltas
+      0.0000 [0,0]). tau is picked on validation sets that contain no cell with
+      n >= 30, so tau=0 is always selected. H2 and H4 therefore were not tested.
+  P2  The MLP is failing: Dementia recall = 0.000 in several runs; balanced accuracy
+      0.415 (BASELINE) and ~0.385 (dial) vs ~0.59 for LGBM. MLP gains from M2/M5 are
+      mostly repairing a collapsed model.
+  P3  H1 (harm grows with lambda x skew) was tested on T_matched macro cell accuracy.
+      When availability is informative, a matched test IMPROVES with lambda (LGBM
+      lambda coefficient +0.033). Harm appears when availability stops being
+      informative, so the outcome must be T_indep and the gap T_matched - T_indep.
+      Also the OLS used only 15 observations / 15 clusters (too little power).
+  P4  The H3 verdict "SUPPORTED" contradicts the tables (M2 raises macro cell
+      accuracy at lambda=0 and on phase-held-out). The verdict rule has no
+      "inconclusive" state and ignores degenerate arms.
+  P5  The DIAL cohort is small (1009 subjects, 11 cells); cell metrics are noisy.
+  P6  natural_minus_balanced_gap is negative for every arm, including the mask-only
+      probe M0 (-0.098), which is implausible; sign also differs from the earlier v5
+      run. The balanced-availability evaluation may be mis-specified.
+  P7  Spec deviations: natural runs use 1 seed (spec: 3); error-decomposition
+      bootstrap n_boot=300 (spec: 2000); the +-90-day sensitivity still contains
+      pattern 0000 episodes (should be dropped); local absolute paths in the report.
+
+INTEGRITY RULES FOR THIS REVISION
+  - Keep the v6 report and tables, renamed with suffix _v6_superseded. Do not delete.
+  - Fixes must be judged ONLY by validity checks (tau not degenerate, MLP not
+    collapsed, weights/metrics unit-tested), never by whether H2/H3 come out as hoped.
+  - Do not change hypotheses H1-H4 or the primary endpoint. Record every change in a
+    "Deviations from v6" section of the report.
+  - Everything from v6 still applies (subject-grouped splits, train-only fitting,
+    no tuning on test) unless this file overrides it.
+
+======================================================================
+1. FIX THE MLP (do first) -> CHECKPOINT A
+======================================================================
+1.1  Log per-epoch train loss, val loss, val balanced accuracy and per-class recall
+     for one BASELINE fold. Show whether it stops too early / collapses to 2 classes.
+1.2  Small config search on VALIDATION ONLY (<= 8 configs), e.g.
+       lr in {3e-4, 1e-3, 3e-3}, weight_decay in {1e-4, 1e-2}, dropout in {0.1, 0.3},
+       batch in {64, 128}, epochs up to 200, early stopping patience 20 on validation
+       balanced accuracy (not macro-F1), hidden 64 (or 128).
+1.3  Acceptance: on BASELINE, MLP M1 balanced accuracy >= LGBM M1 - 0.03 AND recall of
+     every class >= 0.20. Freeze the chosen config for ALL arms.
+1.4  If acceptance is not reached with the budget above: demote the MLP to an appendix
+     model and add logistic regression (L0: features + mask bits, class-agnostic) as the
+     second primary model. State this in the report. Do not keep a collapsed model in
+     the main comparisons.
+Stop and report: the learning curves, the chosen config, and the accept/demote decision.
+
+======================================================================
+2. FIX TAU SELECTION FOR M4 / M4c -> CHECKPOINT A (same report)
+======================================================================
+2.1  Replace validation-split tau selection by POOLED OUT-OF-FOLD selection:
+     inside each outer training fold run a 3-fold subject-grouped inner CV, collect
+     out-of-fold predicted log-probabilities for ALL training episodes, and choose tau
+     on the pooled inner predictions. Cells then have enough samples.
+2.2  Selection criterion: macro cell accuracy over cells with n >= 20 on the pooled
+     inner predictions (tie-break: higher inner balanced accuracy, then smaller tau).
+     Finer grid: tau in {0, 0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0}.
+2.3  Log the chosen tau for every fold/repeat/setting to runs.jsonl and print a table
+     (fraction of folds with tau > 0, per setting and per model).
+2.4  Tests: (a) tau=0 reproduces M1 exactly; (b) at tau>0 predictions differ from M1;
+     (c) on a synthetic dataset where the label depends on the pattern only, M4 with
+     tau=1 must remove the pattern-conditional prior (predictions near uniform within
+     pattern); (d) assert that M4 is NOT identical to M1 in at least some settings; if
+     it is identical everywhere, raise an error and report it.
+2.5  Mark any arm whose test predictions equal M1's exactly as DEGENERATE in all tables
+     (do not print "[0.0000, 0.0000]" intervals; print "identical to M1").
+
+======================================================================
+3. ENLARGE THE DIAL COHORT AND RERUN WITH MORE REPEATS
+======================================================================
+3.1  DIAL cohort := ALL episodes with m_mri = m_fdg = m_amy = 1 (not one per subject),
+     folds grouped by subject, bootstrap by subject. Report n episodes / subjects /
+     class counts.
+3.2  Repeats: 5 folds x 3 repeats (min 2 if compute-limited; state it). Fresh masking
+     realisation per repeat.
+3.3  Cell threshold on pooled out-of-fold test predictions: n >= 30 (report how many
+     cells qualify at each setting; if < 8, lower to 20 and say so).
+3.4  Keep lambda in {0, 0.25, 0.5, 0.75, 1.0}; keep_frac in {1.0, 0.5, 0.25}. If compute
+     is limited, reduce methods first (drop M5), never the lambda levels for M1.
+
+======================================================================
+4. REDO THE H1 TEST (joint effect) -> use the right outcomes
+======================================================================
+4.1  Outcomes: (a) macro cell accuracy on T_indep, (b) balanced accuracy on T_indep,
+     (c) gap = T_matched - T_indep (for both macro cell accuracy and balanced
+     accuracy). Also report the T_matched version separately and explain why dependence
+     can raise matched performance (availability becomes informative).
+4.2  Data: one observation per (setting, repeat, fold) = 15 x repeats x folds rows.
+     OLS  outcome ~ lambda + skew + lambda:skew, with standard errors clustered by
+     (repeat, fold) test-fold id (the same test fold appears in every setting).
+     Report coefficients with 95% CIs; also a bootstrap-by-subject CI for the
+     interaction coefficient.
+4.3  Figures: dose-response curves for T_indep and for the gap (M1, both models).
+4.4  Pre-declared interpretation (do not change after seeing results):
+       harm = decline in T_indep performance as lambda increases;
+       joint effect = lambda:skew coefficient on T_indep outcome differing from 0.
+
+======================================================================
+5. VERDICT RULE (three states) AND REWORDED HYPOTHESES
+======================================================================
+5.1  SUPPORTED     : Holm-adjusted CI on the primary endpoint excludes 0 in the stated
+                     direction AND the macro-F1 non-inferiority guard passes.
+     NOT SUPPORTED : CI lies entirely inside the equivalence margin (+-0.02 on macro
+                     cell accuracy / balanced accuracy), i.e. evidence of no meaningful
+                     effect.
+     INCONCLUSIVE  : otherwise, and always when an arm is DEGENERATE (identical to M1)
+                     or a model failed the section-1 acceptance check.
+5.2  H3 reworded: "Class-only weighting (M2) does not improve macro cell accuracy beyond
+     its effect on class balance." Test: delta macro cell accuracy of M2 vs M1 together
+     with delta balanced accuracy. If M2 improves macro cell accuracy (as in v6 at
+     lambda=0 and on phase-held-out), H3 is NOT SUPPORTED, not "supported".
+5.3  Recompute the Findings table from the new tables; print the deciding number and the
+     CI next to every verdict. Keep the v6 Findings as "superseded".
+
+======================================================================
+6. FIX THE BALANCED-AVAILABILITY EVALUATION (P6) -> CHECKPOINT B
+======================================================================
+6.1  Define the metric as WEIGHTED BALANCED ACCURACY (class-balanced recall using the
+     test weights w = P(c)P(p)/P(c,p), alpha 0.5, clipped [0.2, 5]), not plain
+     accuracy. Report natural bacc, balanced-availability bacc and gap = natural -
+     balanced.
+6.2  Unit tests: (a) when pattern is independent of class (synthetic data), weights ~1
+     and gap ~0; (b) the mask-only model M0 must have balanced-availability bacc close
+     to 1/3; (c) the gap for M0 must be >= 0 on real data.
+6.3  Compare with the earlier v5 values (B1 gap +0.037, N0 +0.0235, M0 +0.068). If the
+     new numbers disagree in sign, find and report the cause before continuing.
+Stop and report the unit-test outcomes and the corrected numbers before section 7.
+
+======================================================================
+7. PHASE-HELD-OUT: UNDERSTAND WHY EVERYTHING HELPS
+======================================================================
+7.1  Report absolute metrics for M1 (not only differences) on the phase-held-out split.
+7.2  Table of class priors and modality availability in train (ADNI1/GO/2) vs test
+     (ADNI3/4). Quantify the prior shift (e.g. KL or the Dementia share difference).
+7.3  Prior-shift diagnostic (ORACLE, labelled as such; uses test labels, never as a
+     method): adjust M1 logits with the true test-class prior and report how much of the
+     M2/M3/M4/M4c gain is reproduced. This tells whether the gain is class-prior shift or
+     cell-aware correction.
+7.4  Add forward-chaining as a robustness check: (train ADNI1/GO/2 -> test ADNI3) and
+     (train ADNI1/GO/2/3 -> test ADNI4), removing test subjects from train.
+7.5  Compare M4 (cell) vs M4c (class-only) directly with a paired CI; report whether the
+     cell-aware version adds anything beyond class-prior correction.
+
+======================================================================
+8. CLEAN UP THE SPEC DEVIATIONS (P7)
+======================================================================
+8.1  Natural-data runs: 3 seeds (average probabilities across seeds); n_boot = 2000 for
+     ALL bootstrap CIs, including the error decomposition.
+8.2  +-90-day sensitivity: drop episodes with no modality in the window (no 0000
+     pattern); report n.
+8.3  Replace absolute local paths in the report by relative paths; add a
+     "Deviations from v6" section listing every change and every remaining reduction.
+8.4  In Part A, print the Spearman correlation (with subject-cluster bootstrap CI)
+     between cell recall and the within-pattern class share P(c|p), per model, in the
+     text next to F2. (The v6 table suggests recall closely tracks P(c|p) for LGBM; this
+     is a candidate headline result.)
+
+======================================================================
+9. REPORT
+======================================================================
+9.1  Rewrite the Discussion and add Conclusions with actual findings and numbers (no
+     placeholders such as "see the H1 row"). Cover: (i) what drives errors on natural
+     data (within-pattern prior), (ii) what the dial shows about harm on T_indep,
+     (iii) which methods help and in which regime, (iv) what the phase shift shows,
+     (v) what remains inconclusive and why.
+9.2  Findings table with the three-state verdicts, deciding numbers and CIs.
+9.3  List limitations, adding: dial is a simulation; MLP status (accepted or demoted);
+     any arm still degenerate.
+
+======================================================================
+10. ORDER AND CHECKPOINTS
+======================================================================
+  1  Section 1 (MLP) and section 2 (tau)         -> CHECKPOINT A
+  2  Section 6 (balanced-availability fix)        -> CHECKPOINT B
+  3  Sections 3, 4 (dial rerun, H1 test)
+  4  Section 7 (phase analysis), section 8 clean-up
+  5  Section 5 verdicts, section 9 report
+At each checkpoint stop, summarise results and wait for confirmation. Do not run the
+large dial grid before CHECKPOINT A and B are cleared.

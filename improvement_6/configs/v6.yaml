@@ -1,0 +1,146 @@
+# =====================================================================
+# PIPELINE v6 — single config.  Read by src/run.py and every module.
+# =====================================================================
+# All randomness is seeded; one line per run is appended to
+# results/runs.jsonl.  Nothing here changes the frozen v2/v3 artefacts.
+
+data:
+  episodes: ../results/step01/stage1/episodes.csv
+  blocks:   ../results/step01/stage1/blocks
+  spec:     ../results/step01/stage1/feature_spec.json
+  folds:    ../results/step03/splits.json
+
+cohorts:
+  # Read-only cohort definitions used by every part.
+  full_column: episode_id          # FULL = all episodes
+  baseline_rule: earliest_dx_prefer_bl   # one episode per subject
+  dial_mods: [mri, fdg, amy]       # BASE_MODS for the imbalance dial
+  dial_masked_mods: [tau]          # mod excluded from DIAL cohort
+
+splits:
+  # Natural-data splits.
+  full_use_frozen_s1: true         # reuse results/step03/splits.json for FULL
+  s1_seed_col: s1                  # column in splits.json holding the S1 dict
+  baseline_folds: 5
+  baseline_repeats: 3
+  dial_folds: 5
+  dial_repeats: 2                 # compute-limited: 3 -> 2 is the first cut
+  val_frac: 0.15
+  phase_heldout_train: [ADNI1, ADNIGO, ADNI2]
+  phase_heldout_test:  [ADNI3, ADNI4]
+
+preprocessing:
+  drop_missing_frac: 0.5            # drop feature if >50% missing on TRAIN modality rows
+  impute: median
+  scale: zscore
+  clip: 5.0
+  clip_soft: false                 # hard clip to [-5,5] for now
+  # missing-modality encoding: MLP -> zeros + mask bit; LGBM -> NaN + mask bits
+  hide_mask: false                 # config flag, not a separate arm; toggled per arm
+
+models:
+  lgbm:
+    n_estimators: 400
+    learning_rate: 0.05
+    num_leaves: 15
+    min_child_samples: 20
+    subsample: 0.8
+    colsample_bytree: 0.8
+    early_stopping_rounds: 30
+    objective: multiclass
+    metric: multi_logloss
+  mlp:
+    d_hidden: 64
+    d_latent: null                 # not used: one encoder per modality, concat -> head
+    dropout: 0.3
+    lr: 1.0e-4
+    weight_decay: 0.05
+    batch_size: 256
+    max_epochs: 60
+    patience: 12
+    encoder: Linear-ReLU-Dropout0.3-Linear-ReLU
+  m0:
+    max_iter: 1000
+    C: 1.0
+
+methods:
+  # M1 baseline
+  m1: {name: M1, kind: baseline}
+  # M2 class-weighted loss: w_c = N/(3 n_c)
+  m2: {name: M2, kind: class_weighted}
+  # M3 joint reweighting: w(c,p) = P(c)P(p)/P(c,p), alpha=0.5, clip[0.2,5]
+  m3:
+    name: M3
+    kind: joint_reweight
+    alpha: 0.5
+    wmin: 0.2
+    wmax: 5.0
+  # M4 cell-wise logit adjustment (post-hoc)
+  m4:
+    name: M4
+    kind: cell_logit_adjust
+    kappa: 20                       # backs off Pbar(c|p) to global class prior
+    tau_grid: [0, 0.25, 0.5, 1.0, 1.5]
+    min_cell_n_val: 30             # cells below this are ignored when picking tau
+  # M4c class-only logit adjustment (control for M4)
+  m4c:
+    name: M4c
+    kind: class_logit_adjust
+    kappa: 20
+    tau_grid: [0, 0.25, 0.5, 1.0, 1.5]
+  # M5 Group DRO over class x pattern cells (MLP only)
+  m5:
+    name: M5
+    kind: group_dro
+    eta: 0.01
+    small_cell_n: 10               # cells with <10 train samples share one group
+  # M0 shortcut probe (always run)
+  m0: {name: M0, kind: shortcut_probe}
+
+arms:
+  # Which methods run on which models.  M5 is MLP-only.
+  LGBM:
+    - M1
+    - M2
+    - M3
+    - M4
+    - M4c
+  MLP:
+    - M1
+    - M2
+    - M3
+    - M4
+    - M4c
+    - M5
+
+dial:
+  # Imbalance dial (Part B).  Section 7.
+  lam_grid: [0, 0.25, 0.5, 0.75, 1.0]
+  keep_frac_grid: [1.0, 0.5, 0.25]     # Dementia subject keep fraction (train+val only)
+  dial_repeats: 2                       # fresh masking realisation per repeat
+  base_mods: [mri, fdg, amy]
+  test_conditions: [T_matched, T_indep, T_full]
+  # Pattern-response matrix: evaluate every test episode under every imposed pattern
+  pattern_response_train_lambdas: [0, 1.0]
+  pattern_response_keep_frac: 1.0
+
+metrics:
+  n_boot: 2000
+  bootstrap_seed: 0
+  min_cell_n_natural: 50
+  min_cell_n_dial: 30
+  n_bins_ece: 10
+  ni_margin_macro_f1: -0.02            # non-inferiority guard
+
+seeds:
+  - 0
+  - 1
+  - 2
+
+outputs:
+  root: ../results/improvement6
+  runs: runs.jsonl
+  cohorts_dir: cohorts
+  tables_dir: tables
+  figures_dir: figures
+  dial_dir: dial
